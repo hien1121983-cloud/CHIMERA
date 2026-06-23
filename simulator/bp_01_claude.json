@@ -1,0 +1,72 @@
+{
+  "entity_id": "{GENERATED_BY_PYTHON_RNG}",
+  "full_name": "{GENERATED_BY_PYTHON_RNG}",
+  "blueprint_origin": "bp_01_claude",
+  "core_data": {
+    "_blueprint_philosophy": "Tập trung vào tổn thương gốc rễ, sự tự lừa dối, xu hướng nghiện ngập và các thiên kiến nhận thức phá hoại quyết định.",
+    
+    "psychological_core": {
+      "trauma_architecture": {
+        "root_traumas": [
+          {
+            "event_category": "Enum [ABANDONMENT, ABUSE, LOSS, HUMILIATION, BETRAYAL]",
+            "age_at_occurrence": "Integer",
+            "compensation_mechanism": "String (Cơ chế bù đắp tâm lý)",
+            "processed": "Boolean (false = vẫn điều khiển hành vi từ trong bóng tối)"
+          }
+        ]
+      },
+      "attachment_profile": {
+        "attachment_style": "Enum [SECURE, ANXIOUS, AVOIDANT, DISORGANIZED]",
+        "intimacy_ceiling": "Integer 1-100 (Mức độ gần gũi tối đa chịu đựng được trước khi đẩy người khác ra xa)"
+      },
+      "self_concept_matrix": {
+        "feared_self": "String (Hình mẫu nhân vật sợ phải trở thành nhất)",
+        "self_image_reality_gap": "Integer 1-100 (Khoảng cách giữa hoang tưởng và thực tại)",
+        "core_belief_system": "Array[String] (Ví dụ: 'Không ai yêu thương vô điều kiện')"
+      },
+      "want_vs_need_conflict": {
+        "conscious_want": "String (Khao khát bề nổi vật chất/xã hội)",
+        "unconscious_need": "String (Nhu cầu vô thức để chữa lành tâm hồn)"
+      }
+    },
+
+    "behavioral_micro_traits": {
+      "personality_model_ocean": {
+        "neuroticism": "Integer 1-100 (Bất ổn cảm xúc - Cao = Phản ứng cực đoan khi bị kích động)",
+        "agreeableness": "Integer 1-100 (Dễ chịu - Thấp = Luôn gây hấn)"
+      },
+      "communication_profile": {
+        "base_communication_style": "Enum [ASSERTIVE, PASSIVE, AGGRESSIVE, PASSIVE_AGGRESSIVE]",
+        "deception_tells": "Array[{tell_behavior: String, trigger_context: String}] (Hành vi vô thức khi nói dối)"
+      },
+      "stress_and_crisis_response": {
+        "primary_stress_response": "Enum [FIGHT, FLIGHT, FREEZE, FAWN]",
+        "panic_behaviors": "Array[String] (Hành vi xuất hiện khi hoảng loạn cực độ)",
+        "emotional_regulation_score": "Integer 1-100 (Thấp = Ra quyết định tồi tệ dưới áp lực)"
+      },
+      "addiction_compulsion_profile": {
+        "addictions": "Array[{type: Enum [SUBSTANCE, BEHAVIORAL, RELATIONAL], severity: Integer 1-100, concealed: Boolean}]",
+        "compulsions": "Array[{behavior: String, ego_syntonic: Boolean}]"
+      },
+      "decision_making_profile": {
+        "cognitive_biases_dominant": "Array[String] (Thiên kiến nhận thức, VD: Confirmation Bias, Sunk-cost)",
+        "moral_licensing_tendency": "Integer 1-100 (Xu hướng biện minh cho hành vi xấu sau khi làm việc tốt)"
+      }
+    },
+
+    "health_and_mental_state": {
+      "mental_health_diagnoses": "Array[{condition: String, insight_level: Integer 1-100 (Thấp = Rất nguy hiểm)}]",
+      "chronic_conditions": "Array[{condition_name: String, treatment_cost_usd: Float, affects_capability: Boolean}]",
+      "biological_clock_pressure": "Boolean (Áp lực sinh học thúc đẩy quyết định phi lý)"
+    },
+
+    "socio_economics_and_hierarchy": {
+      "class_trajectory": "Enum [ASCENDING, STABLE, DECLINING, VOLATILE] (Độ chênh lệch tạo ra sự kiêu ngạo hoặc mặc cảm)",
+      "monthly_burn_rate_usd": "Float (Áp lực chi tiêu hàng tháng)",
+      "soft_power_assets": "Array[{asset_type: Enum [SECRETS, FEAR, LOYALTY, SEX, REPUTATION], leverage_potential: Integer 1-100}]",
+      "inner_circle": "Array[{target_id: UUID, emotional_dependency: Integer 1-100, shared_secrets: Boolean}]"
+    }
+  }
+}
+
