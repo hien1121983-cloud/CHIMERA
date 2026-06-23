@@ -1,0 +1,95 @@
+{
+  "entity_id": "{GENERATED_BY_PYTHON_RNG}",
+  "full_name": "{GENERATED_BY_PYTHON_RNG}",
+  "blueprint_origin": "bp_05_grok",
+  "core_data": {
+    "_blueprint_philosophy": "Mọi thứ đều có thể định lượng. Mâu thuẫn sinh ra từ sự chênh lệch các chỉ số, những thói quen vi mô (micro-habits) lặp đi lặp lại hàng ngày bị phá vỡ, và hạt giống xung đột (conflict_seeds) được gieo sẵn chờ ngày kích nổ.",
+    
+    "timeline_and_mortality": {
+      "birth": {
+        [span_2](start_span)"date": "String (ISO8601) (Tạo ra mâu thuẫn thế hệ và áp lực thời gian)[span_2](end_span)",
+        [span_3](start_span)"circumstances": "Array[String] (Gieo mầm tổn thương từ lúc lọt lòng, ví dụ: nghèo đói, chiến tranh)[span_3](end_span)"
+      },
+      "death": {
+        [span_4](start_span)"predicted_date": "String (ISO8601) or Null (Dự báo cái chết tạo ra các quyết định bị thúc đẩy bởi tử thần)[span_4](end_span)",
+        [span_5](start_span)"cause": "Enum [accident, disease, violence, natural, suicide, unknown] (Nguyên nhân cái chết, kích hoạt kịch bản trả thù)[span_5](end_span)"
+      }
+    },
+
+    "demographics_physicality": {
+      "genetics": {
+        [span_6](start_span)"gender": "Enum[male, female, non_binary, other] (Nguồn gốc mâu thuẫn bản dạng và áp lực xã hội)[span_6](end_span)",
+        [span_7](start_span)"age": "Integer (Kích hoạt khủng hoảng tuổi tác, suy giảm thể chất)[span_7](end_span)",
+        [span_8](start_span)"ethnicity": "Array[String] (Kích hoạt sự phân biệt đối xử hoặc mâu thuẫn lòng trung thành)[span_8](end_span)"
+      },
+      "health_and_appearance": {
+        [span_9](start_span)"build": "Enum [slim, athletic, muscular, overweight, frail] (Ảnh hưởng ấn tượng đầu tiên và rủi ro sức khỏe)[span_9](end_span)",
+        [span_10](start_span)"distinctive_features": "Array[String] (Sẹo, hình xăm; gợi nhắc tổn thương hoặc dùng để nhận dạng)[span_10](end_span)",
+        [span_11](start_span)"attractiveness_score": "Integer 1-100 (Tạo ra sự ghen tị, kiêu ngạo hoặc bị vật hóa)[span_11](end_span)",
+        [span_12](start_span)"chronic_conditions": "Array[String] (Hạn chế năng lực và ép buộc đánh đổi đạo đức)[span_12](end_span)",
+        [span_13](start_span)"current_health": "Integer 1-100 (Sức sống hiện tại; ảnh hưởng quyết định dưới áp lực)[span_13](end_span)"
+      }
+    },
+
+    "socio_economics_capabilities": {
+      "economic": {
+        [span_14](start_span)"income_sources": "Array[{source: String, amount: Integer, stability: Integer 1-100}] (Tạo sự tuyệt vọng tài chính hoặc cám dỗ tham nhũng)[span_14](end_span)",
+        [span_15](start_span)"debts": "Array[{creditor: String, amount: Integer, pressure: Integer 1-100}] (Nợ nần thúc đẩy tống tiền, mưu đồ rủi ro hoặc thỏa hiệp đạo đức)[span_15](end_span)",
+        [span_16](start_span)"net_worth": "Integer (Định vị nhân vật trong xung đột giai cấp)[span_16](end_span)"
+      },
+      "capabilities": {
+        [span_17](start_span)"intelligence": "Integer 1-100 (Tạo sự tự mãn hoặc bị người khác đánh giá thấp)[span_17](end_span)",
+        [span_18](start_span)"emotional_intelligence": "Integer 1-100 (Xác định mức độ thao túng thành công và ổn định quan hệ)[span_18](end_span)",
+        [span_19](start_span)"skills": "Array[{name: String, level: Integer 1-100, domain: String}] (Kỹ năng có thể mở khóa hoặc chặn đứng hướng giải quyết cốt truyện)[span_19](end_span)",
+        [span_20](start_span)"survival_skills": "Array[{skill: String, proficiency: Integer 1-100}] (Kỹ năng nguyên thủy, cốt lõi trong khủng hoảng)[span_20](end_span)"
+      }
+    },
+
+    "social_network_hierarchy": {
+      [span_21](start_span)"social_class": "Enum [underclass, working, middle, upper, elite] (Nguồn gốc của sự phẫn nộ hệ thống hoặc mặc cảm tội lỗi của kẻ có đặc quyền)[span_21](end_span)",
+      [span_22](start_span)"status": "Integer 1-100 (Biến động theo scandal hoặc thành tựu)[span_22](end_span)",
+      "relationships": {
+        [span_23](start_span)"family": "Array[{id: String, relation: String, bond_strength: Integer 1-100, conflict_level: Integer 1-100}] (Lòng trung thành sâu sắc nhất vs Căng thẳng phản bội)[span_23](end_span)",
+        [span_24](start_span)"allies": "Array[{id: String, trust: Integer 1-100, utility: Integer 1-100}] (Mạng lưới hỗ trợ, tiềm năng bị bỏ rơi)[span_24](end_span)",
+        [span_25](start_span)"enemies": "Array[{id: String, grudge_intensity: Integer 1-100, threat_level: Integer 1-100}] (Kẻ thù thúc đẩy trả thù, hoang tưởng)[span_25](end_span)"
+      },
+      [span_26](start_span)"affiliations": "Array[{group: String, role: String, loyalty: Integer 1-100}] (Tạo xung đột bè phái và chia rẽ lòng trung thành)[span_26](end_span)"
+    },
+
+    "behavioral_micro_traits": {
+      "personality_ocean": {
+        [span_27](start_span)"conscientiousness": "Integer 1-100 (Kỷ luật; nguồn gốc của những thất bại về độ tin cậy)[span_27](end_span)",
+        [span_28](start_span)"neuroticism": "Integer 1-100 (Bất ổn cảm xúc; khuếch đại sự hoảng loạn và lựa chọn phi lý)[span_28](end_span)"
+      },
+      "micro_habits": {
+        [span_29](start_span)"speech_patterns": "Array[String] (Tật ngôn ngữ và dấu hiệu nói dối; lật tẩy sự lừa gạt trong hội thoại)[span_29](end_span)",
+        [span_30](start_span)"stress_responses": "Array[{trigger: String, reaction: String}] (Phản ứng vô thức; điểm yếu dễ đoán dưới áp lực)[span_30](end_span)",
+        [span_31](start_span)"daily_routines": "Array[String] (Cho phép kẻ thù căn thời gian tấn công hoặc phá vỡ vùng an toàn)[span_31](end_span)",
+        [span_32](start_span)"addictive_behaviors": "Array[{cue: String, response: String, intensity: Integer 1-100}] (Sự thôi thúc nuôi dưỡng kịch bản tự hủy hoại)[span_32](end_span)"
+      }
+    },
+
+    "psychological_core": {
+      [span_33](start_span)"core_trauma": "Array[{event: String, age: Integer, impact: Integer 1-100, unresolved: Boolean}] (Động lực chính của những khao khát phi lý)[span_33](end_span)",
+      [span_34](start_span)"self_deception": "Array[{belief: String, contradiction: String}] (Lời nói dối nội tâm gây ra bất hòa nhận thức)[span_34](end_span)",
+      "wants_vs_needs": {
+        [span_35](start_span)"wants": "Array[String] (Khao khát ý thức; thường đi chệch hướng và dẫn đến lựa chọn tồi)[span_35](end_span)",
+        [span_36](start_span)"needs": "Array[String] (Nhu cầu tiềm thức; việc thỏa mãn chúng tạo ra sự phát triển hoặc bi kịch)[span_36](end_span)"
+      },
+      [span_37](start_span)"irrational_fears": "Array[{fear: String, intensity: Integer 1-100, trigger: String}] (Làm tê liệt nhân vật ở khoảnh khắc quyết định)[span_37](end_span)"
+    },
+
+    "vulnerabilities_fatal_flaws": {
+      [span_38](start_span)"psychological_weaknesses": "Array[{flaw: String, severity: Integer 1-100, exploitation_method: String}] (Điểm yếu tinh thần cho phép kẻ khác thao túng)[span_38](end_span)",
+      [span_39](start_span)"dark_secrets": "Array[{secret: String, exposure_impact: Integer 1-100, holder: String}] (Nhiên liệu cho tống tiền và kịch bản sụp đổ)[span_39](end_span)",
+      [span_40](start_span)"moral_boundaries": "Array[{boundary: String, flexibility: Integer 1-100}] (Việc vượt qua ranh giới này gây ra sự căm ghét bản thân hoặc sự cứu rỗi)[span_40](end_span)",
+      [span_41](start_span)"fatal_flaw": "String (Tử huyệt bi kịch; động cơ cốt lõi cho sự sụp đổ kinh điển)[span_41](end_span)"
+    },
+
+    "narrative_potential": {
+      [span_42](start_span)"arc_type": "Enum[hero, antihero, villain, tragic, redemption, static] (Định hướng tiến trình mô phỏng dài hạn)[span_42](end_span)",
+      [span_43](start_span)"conflict_seeds": "Array[{type: String, intensity: Integer 1-100, linked_fields: Array[String]}] (Hạt giống mâu thuẫn được liên kết chéo sẵn sàng kích hoạt)[span_43](end_span)"
+    }
+  }
+}
+
