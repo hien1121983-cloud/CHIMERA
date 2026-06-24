@@ -2,9 +2,9 @@
 
 Sinh media song song. So với bản trước:
   - BỎ QUA Scene 1 (do người dùng tự cung cấp video clip).
-  - TTS HYBRID THEO ``speaker_role`` (KHÔNG còn theo vị trí scene):
-        * narrator  -> edge-tts (0 đồng).
-        * character -> ElevenLabsRotator (6 key xoay vòng).
+  - TTS HYBRID THEO Audio Directive:
+        * narrator_text  -> edge-tts (0 đồng).
+        * character_text -> ElevenLabsRotator (6 key xoay vòng).
             Cạn toàn bộ 6 key -> tự fallback edge-tts (không crash).
 """
 from __future__ import annotations
@@ -27,10 +27,8 @@ log = get_logger("renderer")
 
 UNSAFE_RE = re.compile(r"\b(blood|gore|kill|murder|weapon|gun|knife|nude|sex)\b", re.IGNORECASE)
 
-
 def _sanitize_prompt(p: str) -> str:
     return UNSAFE_RE.sub("intense", p)
-
 
 # ---------- Image ----------
 
@@ -43,7 +41,6 @@ def _pollinations(prompt: str, out: Path, seed: int | None = None) -> None:
     img = Image.open(BytesIO(r.content)).convert("RGB")
     img.save(out, "JPEG", quality=80, optimize=True)
 
-
 def _huggingface(prompt: str, out: Path) -> None:
     if not settings.hf_token: raise RuntimeError("HF_TOKEN missing")
     url = f"https://api-inference.huggingface.co/models/{settings.hf_model}"
@@ -52,7 +49,6 @@ def _huggingface(prompt: str, out: Path) -> None:
     r.raise_for_status()
     img = Image.open(BytesIO(r.content)).convert("RGB")
     img.save(out, "JPEG", quality=80, optimize=True)
-
 
 def render_image(prompt: str, out: Path, seed: int | None = None) -> Path:
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -66,28 +62,20 @@ def render_image(prompt: str, out: Path, seed: int | None = None) -> Path:
     retry(lambda: _huggingface(safe, out), attempts=2, label="hf")
     return out
 
-
-# ---------- TTS (HYBRID by speaker_role) ----------
+# ---------- TTS (Giữ hàm cũ để back-compat, nhưng logic chính ở render_all) ----------
 
 async def _edge_tts(text: str, out: Path) -> None:
     import edge_tts
     voice = getattr(settings, "edge_voice_narrator", None) or settings.edge_voice
     await edge_tts.Communicate(text, voice).save(str(out))
 
-
 def _gtts(text: str, out: Path) -> None:
     from gtts import gTTS
     gTTS(text=text, lang=settings.gtts_lang).save(str(out))
 
-
 def render_voice(text: str, out: Path, *, speaker_role: str = "narrator") -> Path:
-    """Routing:
-        - narrator  -> edge-tts -> (fail) gTTS.
-        - character -> ElevenLabsRotator (6 key) -> (cạn) edge-tts -> gTTS.
-    """
     out.parent.mkdir(parents=True, exist_ok=True)
     if not (text or "").strip():
-        # Tạo file mp3 silent ngắn nhất để concat không crash
         try:
             asyncio.run(_edge_tts(".", out))
             return out
@@ -101,14 +89,12 @@ def render_voice(text: str, out: Path, *, speaker_role: str = "narrator") -> Pat
             try:
                 return rot.synth(text, out)
             except QuotaAllExhausted as e:
-                log.warning("ElevenLabs cạn toàn bộ %d key -> fallback edge-tts: %s",
-                            rot.total, e)
+                log.warning("ElevenLabs cạn toàn bộ %d key -> fallback edge-tts: %s", rot.total, e)
             except Exception as e:
                 log.warning("ElevenLabs lỗi -> fallback edge-tts: %s", e)
         else:
             log.info("Không có ElevenLabs key sống -> edge-tts cho character.")
 
-    # narrator (mặc định) hoặc fallback character
     try:
         asyncio.run(_edge_tts(text, out));  return out
     except Exception as e:
@@ -118,7 +104,6 @@ def render_voice(text: str, out: Path, *, speaker_role: str = "narrator") -> Pat
     except Exception as e:
         log.error("gTTS fail: %s", e)
     raise RuntimeError("Tất cả TTS engine đều fail.")
-
 
 # ---------- Batch ----------
 
@@ -183,16 +168,29 @@ def render_all(script: dict, out_dir: Path, **_ignored) -> Dict[str, List[Path]]
             except Exception as e:
                 log.warning("scene %d sfx overlay fail: %s", i + 1, e)
 
-    # ---- Voices: routing theo speaker_role ----
+    # ---- Voices: routing Hybrid (Narrator + Character) ----
+    from .tts_manager import TTSHybridManager
+    tts_manager = TTSHybridManager()
+    
     for i, s in enumerate(scenes):
-        role = (s.get("speaker_role") or "narrator").lower()
-        if role not in ("narrator", "character"): role = "narrator"
         try:
-            voices[i] = render_voice(
-                s.get("dialogue", ""),
-                voi_dir / f"scene_{i+1:02d}.mp3",
-                speaker_role=role,
-            )
+            # Bốc dữ liệu tách biệt từ LLM
+            audio_directive = s.get("audio_directive", {})
+            narrator = audio_directive.get("narrator_text", "")
+            character = audio_directive.get("character_text", "")
+            
+            # Fallback nếu LLM ngáo không tuân thủ schema
+            if not narrator and not character and "dialogue" in s:
+                narrator = s.get("dialogue", "")
+                
+            out_audio_path = str(voi_dir / f"scene_{i+1:02d}.mp3")
+            out_path = Path(tts_manager.generate_audio_for_scene(
+                scene_id=i+1, 
+                narrator_text=narrator, 
+                character_text=character, 
+                output_path=out_audio_path
+            ))
+            voices[i] = out_path
         except Exception as e:
             log.error("scene %d voice fail: %s", i + 1, e)
             voices[i] = voi_dir / f"scene_{i+1:02d}.mp3"
