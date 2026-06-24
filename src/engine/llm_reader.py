@@ -272,13 +272,30 @@ def generate_script(alchemy_prompt: str, scenes: int, budget) -> dict:
         "emotion_tag":   meta["emotion_tag"],
         "scenes":        enriched,
     }
-
+def get_director_system_prompt():
+    return """
+    Ngươi là Tổng Đạo Diễn CHIMERA. Nhiệm vụ của ngươi là viết chi tiết 15 phân cảnh dựa trên Khung Xương đã duyệt.
+    
+    BẢO TOÀN CẤU TRÚC GIAO DIỆN (UI): Phải trả về chính xác 15 phân cảnh, không thêm, không bớt.
+    
+    [KỶ LUẬT HÌNH ẢNH MẶC ĐỊNH]
+    - DUY NHẤT Scene 1: KHÔNG CÓ trường 'image_prompt'. BẮT BUỘC có 'cinematic_video_prompt'.
+    - TỪ Scene 2 ĐẾN Scene 15: KHÔNG CÓ 'cinematic_video_prompt'. BẮT BUỘC có 'image_prompt'.
+    
+    [KỶ LUẬT ÂM THANH HYBRID - QUẢN TRỊ NGÂN SÁCH]
+    Trong mỗi phân cảnh, âm thanh (audio_directive) phải được chia làm 2 phần tĩnh biệt:
+    1. "narrator_text": Lời dẫn truyện, giải thích nội tâm, bối cảnh (Đọc trước). KHÔNG GIỚI HẠN KÝ TỰ.
+    2. "character_text": Lời thoại trực tiếp của nhân vật (Đọc sau). Nếu không có ai nói, để rỗng "".
+    
+    LUẬT SINH TỒN: Tổng số ký tự của tất cả các trường "character_text" trong toàn bộ 15 phân cảnh TUYỆT ĐỐI KHÔNG ĐƯỢC VƯỢT QUÁ 1.000 KÝ TỰ. Hãy để thoại nhân vật thật ngắn gọn, sắc lẹm và mang tính sát thương cao.
+    """
+  
 
 def extract_hook_video_prompt(script: dict) -> str:
     scenes = script.get("scenes") or []
     if not scenes: return ""
     return (scenes[0].get("cinematic_video_prompt") or "").strip()
-  def get_director_system_prompt():
+def get_director_system_prompt():
     return """
     Ngươi là Tổng Đạo Diễn CHIMERA. Nhiệm vụ của ngươi là viết chi tiết 15 phân cảnh dựa trên Khung Xương đã duyệt.
     
