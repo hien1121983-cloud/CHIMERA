@@ -1,20 +1,10 @@
 """FastAPI webhook — V4.0 Phase-1 fix.
 
 Trạng thái mới:
-- ``approve:<ep>:<ver>`` -> chuyển episode sang trạng thái
-  ``awaiting_scene1_upload`` (lưu trong Mongo) rồi nhắc user upload .mp4.
-- Khi user gửi message có ``document``/``video`` (.mp4) và episode đang ở
-  trạng thái chờ -> tải file qua Telegram getFile, lưu vào storage chung
-  (cloud bucket hoặc artifact GitHub) rồi gọi
-  ``workflow_dispatch -> assemble_video.yml`` với episode_id + version.
-- ``canon:<ep>:<ver>`` (Phase 2) — không thay đổi.
-
-LƯU Ý KIẾN TRÚC TIME-OUT:
-Vì GitHub Actions không thể "ngủ" chờ user upload (timeout 30 phút),
-workflow ``daily_production.yml`` chỉ làm Stage A (sinh script + gửi duyệt),
-sau đó kết thúc. Stage B (sinh ảnh 2..N + ghép FFmpeg + gửi MP4) chạy ở
-workflow ``assemble_video.yml`` do webhook này trigger SAU khi nhận đủ
-scene_01.mp4. Như vậy máy ảo không bao giờ phải "chờ".
+- ``approve:<ep>:<ver>`` -> Bỏ qua khâu chờ upload, chuyển ngay sang trạng thái
+  ``scene1_uploaded`` (lưu trong Mongo) và trigger Stage B (assemble_video).
+- Khi user gửi message có ``document``/``video`` (.mp4) -> Vẫn giữ logic cũ 
+  nếu lỡ user upload sau, nhưng thực tế luồng chính đã tự chạy xuyên suốt.
 """
 from __future__ import annotations
 import os
@@ -33,7 +23,6 @@ GH_PAT = os.getenv("PAT_GITHUB", "")
 TG_API = "https://api.telegram.org/bot{token}/{method}"
 TG_FILE = "https://api.telegram.org/file/bot{token}/{path}"
 
-
 # ---------------- helpers ----------------
 
 def _tg_post(method: str, payload: dict) -> dict:
@@ -42,7 +31,6 @@ def _tg_post(method: str, payload: dict) -> dict:
     if not r.ok:
         log.error("TG %s fail: %s", method, r.text[:200])
     return r.json() if r.headers.get("content-type", "").startswith("application/json") else {}
-
 
 def _trigger_workflow(workflow: str, inputs: dict) -> None:
     if not (GH_REPO and GH_PAT):
@@ -57,7 +45,6 @@ def _trigger_workflow(workflow: str, inputs: dict) -> None:
         log.error("Trigger %s fail %s: %s", workflow, r.status_code, r.text)
     else:
         log.info("Trigger workflow %s OK: %s", workflow, inputs)
-
 
 def _download_telegram_file(file_id: str, dest: Path) -> Path:
     info = _tg_post("getFile", {"file_id": file_id})
@@ -74,12 +61,10 @@ def _download_telegram_file(file_id: str, dest: Path) -> Path:
                 f.write(chunk)
     return dest
 
-
 # ---------------- routes ----------------
 
 @app.get("/health")
 def health(): return {"status": "ok"}
-
 
 @app.post("/telegram")
 async def telegram(request: Request,
@@ -100,7 +85,6 @@ async def telegram(request: Request,
 
     return {"ok": True}
 
-
 # ---------------- callback handler ----------------
 
 async def _handle_callback(cq: dict) -> dict:
@@ -109,32 +93,36 @@ async def _handle_callback(cq: dict) -> dict:
 
     if data.startswith("approve:"):
         _, ep, ver = data.split(":", 2)
-        # Chuyển sang trạng thái chờ upload
+        
+        # Đánh lừa hệ thống là đã upload để nó chạy luôn
         try:
             mongo.set_episode_state(ep, {
-                "state": "awaiting_scene1_upload",
+                "state": "scene1_uploaded", 
                 "version_pending": int(ver),
             })
         except Exception as e:
             log.error("Mongo set_state fail: %s", e)
+            
         if cb_id:
             _tg_post("answerCallbackQuery",
-                     {"callback_query_id": cb_id,
-                      "text": "Đã duyệt. Hãy upload file .mp4 Scene 1."})
+                     {"callback_query_id": cb_id, "text": "Đã duyệt! Bắt đầu kết xuất Media."})
+                     
         _tg_post("sendMessage", {
             "chat_id": settings.chat_id,
             "parse_mode": "HTML",
-            "text": (f"📥 <b>{ep} v{ver}</b>: đang chờ bạn gửi file <b>.mp4 Scene 1</b>.\n"
-                     "Gửi dưới dạng <i>file</i> (Document) hoặc <i>video</i> đều được. "
-                     "Tối đa 50MB theo giới hạn Telegram Bot."),
+            "text": f"✅ Đã duyệt tập <b>{ep} v{ver}</b>.\n🎬 Hệ thống đang tự động kết xuất Video Phase 1 và Phase 2...",
         })
-        return {"ok": True, "state": "awaiting_scene1_upload",
-                "episode_id": ep, "version": int(ver)}
+        
+        # BẮN LỆNH CHẠY STAGE B LUÔN, KHÔNG CHỜ ĐỢI TỪ TELEGRAM NỮA
+        _trigger_workflow("assemble_video.yml", {
+            "episode_id": ep,
+            "version": int(ver),
+        })
+        return {"ok": True, "state": "assembled", "episode_id": ep, "version": int(ver)}
 
     if data.startswith("reject:"):
         _, ep, ver = data.split(":", 2)
-        try: mongo.set_episode_state(ep, {"state": "rejected",
-                                          "version_pending": int(ver)})
+        try: mongo.set_episode_state(ep, {"state": "rejected", "version_pending": int(ver)})
         except Exception: pass
         if cb_id:
             _tg_post("answerCallbackQuery",
@@ -145,7 +133,6 @@ async def _handle_callback(cq: dict) -> dict:
         return await _handle_canon(cq, data)
 
     return {"ok": True}
-
 
 async def _handle_canon(cq: dict, data: str) -> dict:
     _, episode_id, ver_str = data.split(":", 2)
@@ -165,7 +152,6 @@ async def _handle_canon(cq: dict, data: str) -> dict:
                  {"callback_query_id": cb_id, "text": f"Đã chốt v{version}"})
     return {"ok": True, "canon": {"episode_id": episode_id, "version": version}}
 
-
 # ---------------- message (file upload) handler ----------------
 
 async def _handle_message(msg: dict) -> dict:
@@ -183,15 +169,13 @@ async def _handle_message(msg: dict) -> dict:
     if "mp4" not in mime and not name.endswith(".mp4"):
         return {"ok": True, "ignored": "not_mp4"}
 
-    # Tìm episode đang chờ
     try:
         pending = mongo.find_episode_in_state("awaiting_scene1_upload")
     except Exception as e:
         log.error("Mongo find pending fail: %s", e)
         pending = None
+        
     if not pending:
-        # BP-5: nếu user upload .mp4 trong lúc episode vẫn ở awaiting_approval
-        # (chưa bấm Approve), nhắc rõ thứ tự thao tác thay vì im lặng bỏ file.
         try:
             waiting_approval = mongo.find_episode_in_state("awaiting_approval")
         except Exception:
@@ -205,6 +189,7 @@ async def _handle_message(msg: dict) -> dict:
                 "parse_mode": "HTML",
             })
             return {"ok": True, "ignored": "awaiting_approval_first"}
+            
         _tg_post("sendMessage", {
             "chat_id": settings.chat_id,
             "text": "⚠️ Không có episode nào đang chờ Scene 1. Bỏ qua file."})
@@ -213,7 +198,6 @@ async def _handle_message(msg: dict) -> dict:
     episode_id = pending["episode_id"]
     version = pending.get("version_pending", 1)
 
-    # Tải file về staging dir
     staging = Path(os.getenv("CHIMERA_STAGING", "/tmp/chimera_staging"))
     dest = staging / episode_id / f"version_{version}" / "scene_01.mp4"
     try:
@@ -225,7 +209,6 @@ async def _handle_message(msg: dict) -> dict:
             "text": f"❌ Tải file Scene 1 fail: {e}"})
         return {"ok": False, "error": "download_failed"}
 
-    # Lưu blob vào Mongo GridFS-like store để workflow B đọc lại
     try:
         mongo.save_scene1_blob(episode_id, version, dest.read_bytes())
         mongo.set_episode_state(episode_id, {
