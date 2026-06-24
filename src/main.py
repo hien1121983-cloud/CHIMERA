@@ -46,6 +46,23 @@ ROOT = Path(__file__).resolve().parent.parent
 DATA = ROOT / "data"
 ADS = ROOT / "ads"
 
+def run_phase_1():
+    print("🚀 BẮT ĐẦU PHASE 1: LÊN KHUNG Ý TƯỞNG")
+    # 1. Gom Data -> Sinh Skeletons -> Anh T Lọc
+    # 2. Lấy Top 3 Skeletons
+    # 3. Gửi Text qua Telegram cho Showrunner
+    
+    print("✅ Đã gửi Telegram. TẮT MÁY ẢO để tiết kiệm Action Minutes!")
+    sys.exit(0) # Lệnh chốt hạ chặn Timeout
+
+def run_phase_2(approved_skeleton):
+    print("🚀 BẮT ĐẦU PHASE 2: SẢN XUẤT MEDIA (ĐÃ CÓ LỆNH DUYỆT)")
+    # 1. Gọi LLM viết chi tiết 15 Scene
+    # 2. Sinh Audio (TTS Rotator) & Ảnh tĩnh (Pollinations)
+    # 3. Gọi FFmpeg render tách khối
+    # 4. Lưu vào Canon History
+
+
 
 def _install_soft_timeout(seconds: int) -> None:
     def _h(signum, frame):
