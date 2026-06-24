@@ -1,0 +1,24 @@
+name: Purgatory Watch (V4)
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements.txt
+      - run: python -m src.delivery.purgatory_watch
+        env:
+          MONGODB_URL_NO1: ${{ secrets.MONGODB_URL_NO1 }}
+          MONGODB_URL_NO2: ${{ secrets.MONGODB_URL_NO2 }}
+          MONGODB_URL_NO3: ${{ secrets.MONGODB_URL_NO3 }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
