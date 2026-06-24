@@ -154,7 +154,34 @@ def _render_segment(out_dir: Path,
     err_log.write_text(result.stderr or "", encoding="utf-8")
     log.error("[%s] FFmpeg fail (exit=%s) — xem %s", out_name, result.returncode, err_log.name)
     return None
+def render_final_episodes(all_scenes, has_glitch=False, glitch_scene_num=8):
+    """
+    Bảo toàn cấu trúc UI 14 phân cảnh (từ Scene 2 đến 15).
+    all_scenes: Danh sách 15 object scene.
+    """
+    # 1. Bỏ qua Scene 1 (The Hook), chỉ render từ Scene 2 (index 1) trở đi
+    render_scenes = all_scenes[1:] 
+    
+    if not has_glitch:
+        print("🎬 Kết xuất: system_video_full.mp4 (Scene 2 -> 15)")
+        build_video(render_scenes, "system_video_full.mp4")
+    else:
+        # Toán học chia mảng: Vị trí cắt = Scene Number - 2 (Vì render_scenes bắt đầu từ Scene 2 [index 0])
+        split_idx = glitch_scene_num - 2 
+        
+        part_1 = render_scenes[:split_idx]  # Từ Scene 2 đến trước Glitch
+        part_2 = render_scenes[split_idx:]  # Từ Glitch đến Scene 15
+        
+        print("✂️ Tách Video phần 1 (Trước Glitch)")
+        build_video(part_1, "system_video_part1.mp4")
+        
+        print("✂️ Tách Video phần 2 (Sau Glitch)")
+        build_video(part_2, "system_video_part2.mp4")
 
+def build_video(scenes_list, output_filename):
+    # Lệnh ghép FFmpeg của bạn (concat ảnh và âm thanh đã xử lý)
+    pass
+  
 
 def build_video(out_dir: Path,
                 bgm_path: Optional[Path] = None,
