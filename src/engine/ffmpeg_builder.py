@@ -1,17 +1,18 @@
-"""FFmpeg Builder — ghép Scene 1 video (do user upload) + ảnh tĩnh Scene 2..N
-+ voice + BGM + hardsub SRT, có CHRONO-GLITCH TRANSITION TĨNH.
+"""FFmpeg Builder — V4.0 SPLIT RENDERING.
 
-V4.0 PHASE-1 FIX
-================
-1. Scene 1 LÀ MỘT VIDEO CLIP (``scene_01.mp4``) do người dùng tự sinh bên ngoài.
-   FFmpeg sẽ concat clip này ở đầu chuỗi.
-2. Glitch transition là FILE TĨNH có sẵn trong ``assets/glitch_transition.mp4``.
-   Nếu scene K trong kịch bản có ``is_glitch=true``, FFmpeg sẽ chèn cứng file
-   này NGAY SAU scene K (ví dụ Scene 8 trong tập 15 phân cảnh).
-   -> KHÔNG gọi API, KHÔNG sinh prompt.
+LUẬT MỚI:
+  - KHÔNG ghép Scene 1 (video do Showrunner tự dựng — sẽ ghép bên ngoài).
+  - KHÔNG chèn file glitch transition — Showrunner sẽ tự chèn.
+  - Hệ thống chỉ render KHỐI scene 2..15:
 
-Cách triển khai: dùng filter ``concat`` (chứ không phải demuxer ``-f concat``)
-để chuẩn hoá mọi nguồn (image-loop / video) về cùng resolution & SAR trước khi nối.
+    * Tập bình thường  : 1 khối duy nhất ``system_video_full.mp4``
+      (concat scene 2 -> 15).
+    * Tập có Glitch    : nếu scene K (2 ≤ K ≤ 15) có ``is_glitch=true``,
+      cắt thành 2 file:
+        - ``system_video_part1.mp4`` : scene 2 -> scene (K-1).
+        - ``system_video_part2.mp4`` : scene K -> scene 15.
+
+  Trả về **list[Path]** các MP4 đã render (1 hoặc 2 phần).
 """
 from __future__ import annotations
 import json
@@ -23,196 +24,182 @@ from ..utils import get_logger
 
 log = get_logger("ffmpeg")
 
-# File transition tĩnh, nằm cố định trong source
-_PROJECT_ROOT = Path(__file__).resolve().parents[2]
-GLITCH_TRANSITION_PATH = _PROJECT_ROOT / "assets" / "glitch_transition.mp4"
-
 
 def _escape_subtitle_path(p: Path) -> str:
     return str(p.resolve()).replace("\\", "/").replace(":", "\\:")
 
 
-def _scene_inputs(out_dir: Path,
-                  timing: Dict[str, float],
-                  scenes_meta: List[dict]) -> List[Tuple[str, Path, float, bool]]:
-    """Tạo danh sách (scene_id, path, duration, is_video).
-
-    - Scene 1: ``scene_01.mp4`` từ ``out_dir`` (user upload). Bắt buộc tồn tại.
-    - Scene k>=2: ``images/scene_kk.jpg``.
-    - Sau bất kỳ scene nào có ``is_glitch=true`` -> chèn 1 input bonus là
-      ``assets/glitch_transition.mp4`` (đánh dấu scene_id = ``glitch_after_KK``).
-    """
-    inputs: List[Tuple[str, Path, float, bool]] = []
-    images_dir = out_dir / "images"
-    scene1_video = out_dir / "scene_01.mp4"
-
-    for idx, sid in enumerate(timing.keys()):
-        dur = float(timing[sid])
-        if idx == 0:
-            if not scene1_video.exists():
-                log.error("KHÔNG TÌM THẤY %s — user chưa upload video Scene 1.",
-                          scene1_video)
-                raise FileNotFoundError(str(scene1_video))
-            inputs.append((sid, scene1_video, dur, True))
-        else:
-            img = images_dir / f"{sid}.jpg"
-            if not img.exists():
-                log.warning("Thiếu ảnh %s — bỏ qua scene.", img.name)
+def _glitch_index_1based(scenes_meta: List[dict]) -> Optional[int]:
+    """Trả về chỉ số 1-based của scene đầu tiên có is_glitch=true, hoặc None."""
+    for s in scenes_meta or []:
+        if s.get("is_glitch"):
+            try:
+                idx = int(s.get("scene"))
+                if 2 <= idx <= len(scenes_meta):
+                    return idx
+            except Exception:
                 continue
-            inputs.append((sid, img, dur, False))
-
-        # Glitch transition tĩnh sau scene này nếu đánh dấu
-        meta = scenes_meta[idx] if idx < len(scenes_meta) else {}
-        if meta.get("is_glitch"):
-            if GLITCH_TRANSITION_PATH.exists():
-                inputs.append((f"glitch_after_{sid}",
-                               GLITCH_TRANSITION_PATH, 0.0, True))
-                log.info("Chèn CHRONO-GLITCH tĩnh sau %s.", sid)
-            else:
-                log.warning("is_glitch=true nhưng thiếu %s — bỏ qua.",
-                            GLITCH_TRANSITION_PATH)
-
-    return inputs
+    return None
 
 
-def build_video(out_dir: Path,
-                bgm_path: Optional[Path] = None,
-                scenes_meta: Optional[List[dict]] = None) -> Optional[Path]:
-    """Ghép final video. ``scenes_meta`` = ``script["scenes"]`` để đọc is_glitch."""
-    out_dir = Path(out_dir)
-    video_path = out_dir / "final_video.mp4"
-    voices_dir = out_dir / "voices"
-    srt_path = out_dir / "timeline.srt"
-    timing_json = out_dir / "timeline_durations.json"
-    scenes_meta = scenes_meta or []
-
-    if not timing_json.exists():
-        log.warning("Thiếu timeline_durations.json — bỏ qua build_video.")
+def _render_segment(out_dir: Path,
+                    scene_indices: List[int],            # 1-based, đã loại scene 1
+                    timing: Dict[str, float],
+                    bgm_path: Optional[Path],
+                    out_name: str,
+                    srt_path: Optional[Path]) -> Optional[Path]:
+    if not scene_indices:
+        log.warning("[%s] không có scene nào để render.", out_name)
         return None
 
-    try:
-        timing: Dict[str, float] = json.loads(timing_json.read_text(encoding="utf-8"))
-        if not timing:
-            log.warning("timing rỗng.")
-            return None
+    out_path  = out_dir / out_name
+    img_dir   = out_dir / "images"
+    voice_dir = out_dir / "voices"
 
-        scene_inputs = _scene_inputs(out_dir, timing, scenes_meta)
-        if not scene_inputs:
-            log.error("Không có input video/image hợp lệ.")
-            return None
+    # ---- Concat voice cho đoạn này ----
+    seg_voice_list = out_dir / f"_voice_list_{out_path.stem}.txt"
+    have_voice = False
+    with seg_voice_list.open("w", encoding="utf-8") as f:
+        for idx in scene_indices:
+            sid = f"scene_{idx:02d}"
+            v = voice_dir / f"{sid}.mp3"
+            if v.exists():
+                f.write(f"file '{v.resolve()}'\n"); have_voice = True
 
-        # ---- Concat voice (Scene 1..N) ----
-        voice_list = out_dir / "_voice_list.txt"
-        with voice_list.open("w", encoding="utf-8") as f:
-            for sid in timing.keys():
-                v = voices_dir / f"{sid}.mp3"
-                if v.exists():
-                    f.write(f"file '{v.resolve()}'\n")
-        voices_concat = out_dir / "_voices_concat.mp3"
+    voices_concat = out_dir / f"_voices_concat_{out_path.stem}.mp3"
+    if have_voice:
         r = subprocess.run(
             ["ffmpeg", "-y", "-f", "concat", "-safe", "0",
-             "-i", str(voice_list), "-c", "copy", str(voices_concat)],
+             "-i", str(seg_voice_list), "-c", "copy", str(voices_concat)],
             capture_output=True, text=True,
         )
         if r.returncode != 0:
             subprocess.run(
                 ["ffmpeg", "-y", "-f", "concat", "-safe", "0",
-                 "-i", str(voice_list), "-c:a", "libmp3lame", "-b:a", "128k",
+                 "-i", str(seg_voice_list), "-c:a", "libmp3lame", "-b:a", "128k",
                  str(voices_concat)],
                 check=True, capture_output=True,
             )
 
-        # ---- Build ffmpeg command với filter_complex concat ----
-        W, H = settings.video_width, settings.video_height
-        cmd: List[str] = ["ffmpeg", "-y"]
-        filter_parts: List[str] = []
-        concat_inputs: List[str] = []
+    W, H = settings.video_width, settings.video_height
+    cmd: List[str] = ["ffmpeg", "-y"]
+    filter_parts: List[str] = []
+    concat_inputs: List[str] = []
+    valid_count = 0
 
-        for i, (sid, path, dur, is_video) in enumerate(scene_inputs):
-            if is_video:
-                # BP-2: glitch transition là file tĩnh, suppress audio track để
-                # tránh xung đột với voices_concat khi map [n:a].
-                if sid.startswith("glitch_after_"):
-                    cmd += ["-an", "-i", str(path)]
-                else:
-                    cmd += ["-i", str(path)]
-                # Chuẩn hoá: scale + pad + setsar
-                filter_parts.append(
-                    f"[{i}:v]scale={W}:{H}:force_original_aspect_ratio=decrease,"
-                    f"pad={W}:{H}:(ow-iw)/2:(oh-ih)/2,setsar=1,fps=30,format=yuv420p[v{i}]"
-                )
-            else:
-                # ảnh tĩnh -> loop trong `dur` giây
-                cmd += ["-loop", "1", "-t", f"{dur:.3f}", "-i", str(path)]
-                filter_parts.append(
-                    f"[{i}:v]scale={W}:{H}:force_original_aspect_ratio=decrease,"
-                    f"pad={W}:{H}:(ow-iw)/2:(oh-ih)/2,setsar=1,fps=30,format=yuv420p[v{i}]"
-                )
-            concat_inputs.append(f"[v{i}]")
-
-        # Concat tất cả nhánh video
-        n = len(scene_inputs)
+    for i, scene_idx in enumerate(scene_indices):
+        sid = f"scene_{scene_idx:02d}"
+        path = img_dir / f"{sid}.jpg"
+        dur = float(timing.get(sid) or 3.0)
+        if not path.exists():
+            log.warning("[%s] thiếu %s — bỏ scene.", out_name, path.name); continue
+        cmd += ["-loop", "1", "-t", f"{dur:.3f}", "-i", str(path)]
         filter_parts.append(
-            "".join(concat_inputs) + f"concat=n={n}:v=1:a=0[vcat]"
+            f"[{valid_count}:v]scale={W}:{H}:force_original_aspect_ratio=decrease,"
+            f"pad={W}:{H}:(ow-iw)/2:(oh-ih)/2,setsar=1,fps=30,format=yuv420p[v{valid_count}]"
         )
+        concat_inputs.append(f"[v{valid_count}]")
+        valid_count += 1
 
-        # Subtitle hardsub (nếu có)
-        last_vlabel = "vcat"
-        if srt_path.exists():
-            sub_path = _escape_subtitle_path(srt_path)
-            filter_parts.append(f"[vcat]subtitles='{sub_path}'[vout]")
-            last_vlabel = "vout"
+    if valid_count == 0:
+        log.error("[%s] không có input ảnh hợp lệ.", out_name); return None
 
-        # Audio: voice concat + (optional) BGM duck
-        cmd += ["-i", str(voices_concat)]   # index = n
-        voice_idx = n
-        has_bgm = bool(bgm_path and Path(bgm_path).exists())
-        if has_bgm:
-            cmd += ["-i", str(bgm_path)]    # index = n+1
+    filter_parts.append("".join(concat_inputs) + f"concat=n={valid_count}:v=1:a=0[vcat]")
+
+    last_vlabel = "vcat"
+    if srt_path and srt_path.exists():
+        filter_parts.append(f"[vcat]subtitles='{_escape_subtitle_path(srt_path)}'[vout]")
+        last_vlabel = "vout"
+
+    # Audio
+    if have_voice:
+        cmd += ["-i", str(voices_concat)]
+        voice_idx = valid_count
+        if bgm_path and Path(bgm_path).exists():
+            cmd += ["-i", str(bgm_path)]
             filter_parts.append(
-                f"[{voice_idx+1}:a]volume={settings.bgm_volume_ratio}[bgm_d]"
-            )
+                f"[{voice_idx+1}:a]volume={settings.bgm_volume_ratio}[bgm_d]")
             filter_parts.append(
-                f"[{voice_idx}:a][bgm_d]amix=inputs=2:duration=first:dropout_transition=2[aout]"
-            )
+                f"[{voice_idx}:a][bgm_d]amix=inputs=2:duration=first:dropout_transition=2[aout]")
         else:
             filter_parts.append(f"[{voice_idx}:a]anull[aout]")
+        audio_map = ["-map", "[aout]"]
+    else:
+        audio_map = ["-an"]
 
-        filter_complex = "; ".join(filter_parts)
-        cmd += [
-            "-filter_complex", filter_complex,
-            "-map", f"[{last_vlabel}]", "-map", "[aout]",
-            "-c:v", "libx264", "-preset", settings.video_preset,
-            "-crf", str(settings.video_crf),
-            "-c:a", "aac", "-b:a", "128k",
-            "-pix_fmt", "yuv420p", "-shortest",
-            str(video_path),
-        ]
+    cmd += [
+        "-filter_complex", "; ".join(filter_parts),
+        "-map", f"[{last_vlabel}]", *audio_map,
+        "-c:v", "libx264", "-preset", settings.video_preset,
+        "-crf", str(settings.video_crf),
+        "-c:a", "aac", "-b:a", "128k",
+        "-pix_fmt", "yuv420p", "-shortest",
+        str(out_path),
+    ]
 
-        log.info("FFmpeg: %d inputs (bgm=%s, glitch=%s)", n, has_bgm,
-                 any(sid.startswith("glitch_after_") for sid, *_ in scene_inputs))
-        result = subprocess.run(
-            cmd, cwd=str(out_dir), capture_output=True, text=True,
-            timeout=settings.ffmpeg_timeout_sec,
-        )
-        if result.returncode == 0 and video_path.exists():
-            log.info("MP4 ra lò: %s (%.1f MB)", video_path.name,
-                     video_path.stat().st_size / 1_048_576)
-            for p in [voice_list, voices_concat]:
-                try: p.unlink()
-                except Exception: pass
-            return video_path
+    log.info("[%s] FFmpeg: %d ảnh, voice=%s, bgm=%s",
+             out_name, valid_count, have_voice, bool(bgm_path))
+    result = subprocess.run(cmd, cwd=str(out_dir), capture_output=True, text=True,
+                            timeout=settings.ffmpeg_timeout_sec)
+    # dọn temp
+    for p in [seg_voice_list, voices_concat]:
+        try: p.unlink()
+        except Exception: pass
 
-        (out_dir / "ffmpeg_error.log").write_text(result.stderr or "", encoding="utf-8")
-        log.error("FFmpeg fail (exit=%s), xem ffmpeg_error.log", result.returncode)
+    if result.returncode == 0 and out_path.exists():
+        log.info("[%s] OK (%.1f MB).", out_name, out_path.stat().st_size / 1_048_576)
+        return out_path
+
+    err_log = out_dir / f"ffmpeg_error_{out_path.stem}.log"
+    err_log.write_text(result.stderr or "", encoding="utf-8")
+    log.error("[%s] FFmpeg fail (exit=%s) — xem %s", out_name, result.returncode, err_log.name)
+    return None
+
+
+def build_video(out_dir: Path,
+                bgm_path: Optional[Path] = None,
+                scenes_meta: Optional[List[dict]] = None) -> Optional[List[Path]]:
+    """Render khối scene 2..N. Trả về list các MP4 đã sinh ra
+    (1 file ``system_video_full.mp4`` hoặc 2 file ``system_video_part1/2.mp4``).
+    """
+    out_dir = Path(out_dir)
+    timing_json = out_dir / "timeline_durations.json"
+    srt_path = out_dir / "timeline.srt"
+    scenes_meta = scenes_meta or []
+
+    if not timing_json.exists():
+        log.warning("Thiếu timeline_durations.json — bỏ qua build_video.")
         return None
-
-    except FileNotFoundError as e:
-        log.error("Thiếu file: %s", e)
-        return None
-    except subprocess.TimeoutExpired:
-        log.error("FFmpeg timeout %ds", settings.ffmpeg_timeout_sec)
-        return None
+    try:
+        timing: Dict[str, float] = json.loads(timing_json.read_text(encoding="utf-8"))
     except Exception as e:
-        log.error("build_video lỗi: %s", e)
-        return None
+        log.error("Đọc timing fail: %s", e); return None
+    if not timing:
+        log.warning("timing rỗng."); return None
+
+    total = len(scenes_meta) or len([k for k in timing if k.startswith("scene_")])
+    all_idx = list(range(2, total + 1))   # bỏ scene 1
+    if not all_idx:
+        log.error("Không có scene 2..N nào."); return None
+
+    glitch = _glitch_index_1based(scenes_meta)
+    outputs: List[Path] = []
+
+    if glitch is None or glitch <= 2 or glitch > total:
+        log.info("Render 1 khối liền mạch scene 2..%d.", total)
+        out = _render_segment(out_dir, all_idx, timing, bgm_path,
+                              "system_video_full.mp4", srt_path)
+        if out: outputs.append(out)
+    else:
+        log.info("Glitch tại scene %d -> tách 2 phần (2..%d) + (%d..%d).",
+                 glitch, glitch - 1, glitch, total)
+        part1_idx = [i for i in all_idx if i < glitch]
+        part2_idx = [i for i in all_idx if i >= glitch]
+        out1 = _render_segment(out_dir, part1_idx, timing, bgm_path,
+                               "system_video_part1.mp4", srt_path)
+        out2 = _render_segment(out_dir, part2_idx, timing, bgm_path,
+                               "system_video_part2.mp4", srt_path)
+        if out1: outputs.append(out1)
+        if out2: outputs.append(out2)
+
+    return outputs or None

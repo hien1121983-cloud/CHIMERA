@@ -1,11 +1,11 @@
-"""Renderer — sinh media song song.
+"""Renderer — V4.0.
 
-V4.0 PHASE-1 FIX
-================
-- BỎ QUA sinh ảnh Scene 1 (do người dùng tự cung cấp video clip).
-- Chỉ sinh ảnh tĩnh từ Scene 2 đến Scene N.
-- TTS: dùng ``ElevenLabsRotator`` (6 key xoay vòng). Khi cạn cả 6 key, tự động
-  fallback sang edge-tts → gTTS, TUYỆT ĐỐI không crash pipeline.
+Sinh media song song. So với bản trước:
+  - BỎ QUA Scene 1 (do người dùng tự cung cấp video clip).
+  - TTS HYBRID THEO ``speaker_role`` (KHÔNG còn theo vị trí scene):
+        * narrator  -> edge-tts (0 đồng).
+        * character -> ElevenLabsRotator (6 key xoay vòng).
+            Cạn toàn bộ 6 key -> tự fallback edge-tts (không crash).
 """
 from __future__ import annotations
 import asyncio
@@ -35,12 +35,9 @@ def _sanitize_prompt(p: str) -> str:
 # ---------- Image ----------
 
 def _pollinations(prompt: str, out: Path, seed: int | None = None) -> None:
-    if seed is None:
-        seed = random.randint(1, 10_000_000)
+    if seed is None: seed = random.randint(1, 10_000_000)
     url = settings.pollinations_url.format(
-        prompt=requests.utils.quote(prompt),
-        seed=seed,
-    )
+        prompt=requests.utils.quote(prompt), seed=seed)
     r = requests.get(url, timeout=settings.pollinations_timeout)
     r.raise_for_status()
     img = Image.open(BytesIO(r.content)).convert("RGB")
@@ -48,8 +45,7 @@ def _pollinations(prompt: str, out: Path, seed: int | None = None) -> None:
 
 
 def _huggingface(prompt: str, out: Path) -> None:
-    if not settings.hf_token:
-        raise RuntimeError("HF_TOKEN missing")
+    if not settings.hf_token: raise RuntimeError("HF_TOKEN missing")
     url = f"https://api-inference.huggingface.co/models/{settings.hf_model}"
     headers = {"Authorization": f"Bearer {settings.hf_token}"}
     r = requests.post(url, headers=headers, json={"inputs": prompt}, timeout=60)
@@ -71,12 +67,12 @@ def render_image(prompt: str, out: Path, seed: int | None = None) -> Path:
     return out
 
 
-# ---------- TTS ----------
+# ---------- TTS (HYBRID by speaker_role) ----------
 
 async def _edge_tts(text: str, out: Path) -> None:
     import edge_tts
-    communicate = edge_tts.Communicate(text, settings.edge_voice)
-    await communicate.save(str(out))
+    voice = getattr(settings, "edge_voice_narrator", None) or settings.edge_voice
+    await edge_tts.Communicate(text, voice).save(str(out))
 
 
 def _gtts(text: str, out: Path) -> None:
@@ -84,37 +80,41 @@ def _gtts(text: str, out: Path) -> None:
     gTTS(text=text, lang=settings.gtts_lang).save(str(out))
 
 
-def render_voice(text: str, out: Path, *, prefer_eleven: bool = False) -> Path:
-    """TTS chiến lược:
-        - ``prefer_eleven=True`` (hook / CTA): thử ElevenLabs trước (xoay 6 key);
-          khi ``QuotaAllExhausted`` -> fallback edge-tts -> gTTS.
-        - ``prefer_eleven=False`` (scene thường): edge-tts -> gTTS.
-    KHÔNG bao giờ raise nếu còn ít nhất 1 engine free hoạt động.
+def render_voice(text: str, out: Path, *, speaker_role: str = "narrator") -> Path:
+    """Routing:
+        - narrator  -> edge-tts -> (fail) gTTS.
+        - character -> ElevenLabsRotator (6 key) -> (cạn) edge-tts -> gTTS.
     """
     out.parent.mkdir(parents=True, exist_ok=True)
+    if not (text or "").strip():
+        # Tạo file mp3 silent ngắn nhất để concat không crash
+        try:
+            asyncio.run(_edge_tts(".", out))
+            return out
+        except Exception:
+            pass
     jitter_sleep()
 
-    if prefer_eleven:
+    if speaker_role == "character":
         rot = get_rotator()
         if rot.total > 0 and not rot.all_exhausted():
             try:
                 return rot.synth(text, out)
             except QuotaAllExhausted as e:
-                log.warning("ElevenLabs cạn quota toàn bộ %d key -> fallback edge-tts: %s",
+                log.warning("ElevenLabs cạn toàn bộ %d key -> fallback edge-tts: %s",
                             rot.total, e)
             except Exception as e:
-                log.warning("ElevenLabs lỗi không mong đợi -> fallback edge-tts: %s", e)
+                log.warning("ElevenLabs lỗi -> fallback edge-tts: %s", e)
+        else:
+            log.info("Không có ElevenLabs key sống -> edge-tts cho character.")
 
-    # Edge-TTS
+    # narrator (mặc định) hoặc fallback character
     try:
-        asyncio.run(_edge_tts(text, out))
-        return out
+        asyncio.run(_edge_tts(text, out));  return out
     except Exception as e:
         log.warning("edge-tts fail: %s — fallback gTTS", e)
-    # gTTS
     try:
-        _gtts(text, out)
-        return out
+        _gtts(text, out); return out
     except Exception as e:
         log.error("gTTS fail: %s", e)
     raise RuntimeError("Tất cả TTS engine đều fail.")
@@ -123,13 +123,6 @@ def render_voice(text: str, out: Path, *, prefer_eleven: bool = False) -> Path:
 # ---------- Batch ----------
 
 def render_all(script: dict, out_dir: Path, **_ignored) -> Dict[str, List[Path]]:
-    """Sinh batch:
-        - Ảnh: Scene 2..N (Scene 1 BỎ QUA — chờ user upload .mp4).
-        - Audio: tất cả scene.
-        - Overlays comic SFX: tất cả scene (PIL nhẹ).
-
-    Trả về dict gồm cả mảng images (Scene 1 = None) và voices.
-    """
     img_dir = out_dir / "images"
     voi_dir = out_dir / "voices"
     sfx_dir = out_dir / "sfx_overlays"
@@ -141,16 +134,14 @@ def render_all(script: dict, out_dir: Path, **_ignored) -> Dict[str, List[Path]]
     voices: List[Optional[Path]] = [None] * len(scenes)
     overlays: List[Optional[Path]] = [None] * len(scenes)
 
-    # ---- Scene 1: KHÔNG sinh ảnh, chỉ ghi prompt video cho user ----
+    # ---- Scene 1: KHÔNG sinh ảnh, ghi prompt cho người dùng ----
     s1 = scenes[0] if scenes else {}
     hook_prompt = (s1.get("cinematic_video_prompt") or "").strip()
     if hook_prompt:
         try:
             (out_dir / "scene_01_cinematic_video_prompt.txt").write_text(
-                hook_prompt, encoding="utf-8"
-            )
-            log.info("Đã ghi scene_01_cinematic_video_prompt.txt (%d ký tự).",
-                     len(hook_prompt))
+                hook_prompt, encoding="utf-8")
+            log.info("Ghi scene_01_cinematic_video_prompt.txt (%d ký tự).", len(hook_prompt))
         except Exception as e:
             log.warning("Ghi cinematic_video_prompt fail: %s", e)
     else:
@@ -160,11 +151,9 @@ def render_all(script: dict, out_dir: Path, **_ignored) -> Dict[str, List[Path]]
     with ThreadPoolExecutor(max_workers=settings.max_workers) as pool:
         futs = {}
         for i, s in enumerate(scenes):
-            if i == 0:
-                continue   # Scene 1 do user cung cấp video
+            if i == 0: continue
             if "image_prompt" not in s:
-                log.warning("Scene %d thiếu image_prompt — bỏ qua.", i + 1)
-                continue
+                log.warning("Scene %d thiếu image_prompt — bỏ qua.", i + 1); continue
             seed = None
             prompt = s["image_prompt"]
             if settings.enable_seed_lock:
@@ -176,11 +165,10 @@ def render_all(script: dict, out_dir: Path, **_ignored) -> Dict[str, List[Path]]
                              img_dir / f"scene_{i+1:02d}.jpg", seed)] = i
         for f in as_completed(futs):
             i = futs[f]
-            try:
-                images[i] = f.result()
+            try: images[i] = f.result()
             except Exception as e:
                 log.error("scene %d image fail: %s", i + 1, e)
-                images[i] = img_dir / f"scene_{i+1:02d}.jpg"   # rỗng, ffmpeg sẽ skip
+                images[i] = img_dir / f"scene_{i+1:02d}.jpg"
 
     # ---- Comic SFX overlays ----
     if settings.enable_comic_sfx:
@@ -195,15 +183,15 @@ def render_all(script: dict, out_dir: Path, **_ignored) -> Dict[str, List[Path]]
             except Exception as e:
                 log.warning("scene %d sfx overlay fail: %s", i + 1, e)
 
-    # ---- Voices ----
-    n = len(scenes)
+    # ---- Voices: routing theo speaker_role ----
     for i, s in enumerate(scenes):
-        prefer = (i == 0) or (i == n - 1)   # Hook + CTA ưu tiên ElevenLabs
+        role = (s.get("speaker_role") or "narrator").lower()
+        if role not in ("narrator", "character"): role = "narrator"
         try:
             voices[i] = render_voice(
                 s.get("dialogue", ""),
                 voi_dir / f"scene_{i+1:02d}.mp3",
-                prefer_eleven=prefer,
+                speaker_role=role,
             )
         except Exception as e:
             log.error("scene %d voice fail: %s", i + 1, e)
