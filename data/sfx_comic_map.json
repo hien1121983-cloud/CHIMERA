@@ -1,0 +1,12 @@
+{
+  "tense":     {"text": "!!",     "color": "#FF4444", "size": 140},
+  "dramatic":  {"text": "BANG!",  "color": "#FFD700", "size": 160},
+  "twist":     {"text": "???",    "color": "#FF00FF", "size": 150},
+  "dark":      {"text": "heh.",   "color": "#AAAAAA", "size": 100},
+  "sad":       {"text": "...",    "color": "#87CEEB", "size": 120},
+  "hopeful":   {"text": "\u2726", "color": "#FFFFFF", "size": 130},
+  "calm":      null,
+  "betrayal":  {"text": "PHẢN BỘI!", "color": "#FF2266", "size": 150},
+  "revenge":   {"text": "BÁO THÙ!",  "color": "#FF6600", "size": 150},
+  "cliffhanger": {"text": "...?!",   "color": "#FFAA00", "size": 140}
+}
