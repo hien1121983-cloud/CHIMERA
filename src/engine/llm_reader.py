@@ -6,11 +6,10 @@ Quy tắc mới so với phiên bản trước:
   1. Scene 1 (THE HOOK)  -> xuất ``cinematic_video_prompt`` (TIẾNG ANH ~80-120 từ).
                             KHÔNG sinh ``image_prompt`` cho Scene 1.
   2. Scene 2..N          -> xuất ``image_prompt`` như cũ.
-  3. MỖI scene BẮT BUỘC có ``speaker_role`` ∈ {"narrator", "character"}.
-     - narrator: lời dẫn chuyện (không giới hạn độ dài).
-     - character: lời thoại trực tiếp. LUẬT SINH TỒN: TỔNG ký tự
-       ``dialogue`` của các scene có speaker_role=character TRÊN TOÀN TẬP
-       KHÔNG vượt quá ``settings.max_character_dialogue_chars`` (1000).
+  3. MỖI scene BẮT BUỘC có ``audio_directive`` chứa `narrator_text` và `character_text`.
+     - narrator_text: lời dẫn chuyện (không giới hạn độ dài).
+     - character_text: lời thoại trực tiếp. LUẬT SINH TỒN: TỔNG ký tự
+       ``character_text`` TRÊN TOÀN TẬP KHÔNG vượt quá ``settings.max_character_dialogue_chars`` (1000).
        Nếu vượt, hệ thống cắt từ scene cuối cùng trở lên cho tới khi hợp lệ.
 """
 from __future__ import annotations
@@ -51,36 +50,47 @@ OUTLINE_SCHEMA = {
 
 SCENE1_SCHEMA = {
     "type": "object",
-    "required": ["scene", "dialogue", "cinematic_video_prompt", "sfx_tag", "speaker_role"],
+    "required": ["scene", "audio_directive", "cinematic_video_prompt", "sfx_tag"],
     "properties": {
         "scene": {"type": "integer", "enum": [1]},
         "actor": {"type": "string"},
-        "dialogue": {"type": "string"},
+        "audio_directive": {
+            "type": "object",
+            "properties": {
+                "narrator_text": {"type": "string"},
+                "character_text": {"type": "string"}
+            }
+        },
         "cinematic_video_prompt": {"type": "string", "minLength": 40},
         "sfx_tag": {"type": "string"},
         "comic_text": {"type": "string"},
         "tags": {"type": "array", "items": {"type": "string"}},
         "no_ad": {"type": "boolean"},
-        "speaker_role": {"type": "string", "enum": ["narrator", "character"]},
     },
-    "not": {"required": ["image_prompt"]},
+    "not": {"required": ["image_prompt", "dialogue", "speaker_role"]},
 }
 
 SCENE_SCHEMA = {
     "type": "object",
-    "required": ["scene", "dialogue", "image_prompt", "sfx_tag", "speaker_role"],
+    "required": ["scene", "audio_directive", "image_prompt", "sfx_tag"],
     "properties": {
         "scene": {"type": "integer"},
         "actor": {"type": "string"},
-        "dialogue": {"type": "string"},
+        "audio_directive": {
+            "type": "object",
+            "properties": {
+                "narrator_text": {"type": "string"},
+                "character_text": {"type": "string"}
+            }
+        },
         "image_prompt": {"type": "string"},
         "sfx_tag": {"type": "string"},
         "comic_text": {"type": "string"},
         "tags": {"type": "array", "items": {"type": "string"}},
         "no_ad": {"type": "boolean"},
         "is_glitch": {"type": "boolean"},
-        "speaker_role": {"type": "string", "enum": ["narrator", "character"]},
     },
+    "not": {"required": ["dialogue", "speaker_role"]}
 }
 
 
@@ -137,12 +147,10 @@ def stage1_outline(alchemy_prompt: str, scenes: int, budget) -> dict:
 # ---------- Stage 2: từng scene ----------
 
 _CHAR_BUDGET_HINT = (
-    "\n- speaker_role ∈ {narrator, character}. CHỈ dùng 'character' khi đó là "
-    "thoại trực tiếp BẮT BUỘC; phần còn lại là 'narrator'. TỔNG dialogue của các "
-    "scene 'character' trên CẢ TẬP không được vượt quá "
+    "\n- audio_directive: TUYỆT ĐỐI tuân thủ giới hạn ngân sách. "
+    "TỔNG lượng ký tự trong 'character_text' trên CẢ TẬP không được vượt quá "
     f"{getattr(settings, 'max_character_dialogue_chars', 1000)} ký tự."
 )
-
 
 def _scene1_prompt(outline_meta: dict, scene_skel: dict) -> str:
     extras = ""
@@ -156,16 +164,13 @@ def _scene1_prompt(outline_meta: dict, scene_skel: dict) -> str:
         f"Phân cảnh Scene 1 (THE HOOK) — phân cảnh do CON NGƯỜI tự dựng video:\n"
         f"{json.dumps(scene_skel, ensure_ascii=False)}\n\n"
         "Hãy viết:\n"
-        "- dialogue: TIẾNG VIỆT, ≤ 200 ký tự, câu mồi giật gân.\n"
-        "- cinematic_video_prompt: BẰNG TIẾNG ANH chuyên nghiệp, 80-120 từ, "
-        "miêu tả camera/lighting/mood/subject cho 1 video clip 5-10s. Không kèm dialogue.\n"
+        "- audio_directive: Trả về object chứa 'narrator_text' (dẫn truyện) và 'character_text' (thoại nhân vật).\n"
+        "- cinematic_video_prompt: BẰNG TIẾNG ANH chuyên nghiệp, 80-120 từ, miêu tả camera/lighting/mood/subject cho 1 clip 5s. Không kèm dialogue.\n"
         "- sfx_tag: 1 từ ∈ {tense, dramatic, sad, twist, calm, hopeful, dark}.\n"
-        "- speaker_role: 'narrator' hoặc 'character'.\n"
         + _CHAR_BUDGET_HINT + extras +
         "\n- TUYỆT ĐỐI không sinh image_prompt cho Scene 1.\n\n"
         f"TRẢ VỀ JSON theo schema:\n{json.dumps(SCENE1_SCHEMA)}"
     )
-
 
 def _scene_prompt(outline_meta: dict, scene_skel: dict) -> str:
     extras = ""
@@ -178,16 +183,13 @@ def _scene_prompt(outline_meta: dict, scene_skel: dict) -> str:
         f"emotion: {outline_meta.get('emotion_tag')}\n"
         f"Phân cảnh:\n{json.dumps(scene_skel, ensure_ascii=False)}\n\n"
         "Hãy viết:\n"
-        "- dialogue: TIẾNG VIỆT, ≤ 280 ký tự, đúng tính cách nhân vật.\n"
-        "- image_prompt: TIẾNG ANH, chi tiết camera/lighting/composition, "
-        "style 'cinematic comic'.\n"
+        "- audio_directive: Trả về object chứa 'narrator_text' (dẫn truyện) và 'character_text' (thoại nhân vật).\n"
+        "- image_prompt: TIẾNG ANH, chi tiết camera/lighting/composition, style 'cinematic comic'.\n"
         "- sfx_tag: 1 từ ∈ {tense, dramatic, sad, twist, calm, hopeful, dark}.\n"
-        "- speaker_role: 'narrator' (lời dẫn) hoặc 'character' (thoại trực tiếp)."
         + _CHAR_BUDGET_HINT + extras +
         "\n- Giữ nguyên scene number và actor.\n\n"
         f"TRẢ VỀ JSON theo schema:\n{json.dumps(SCENE_SCHEMA)}"
     )
-
 
 def stage2_scene(outline_meta: dict, scene_skel: dict, scene_index: int, budget) -> dict:
     is_hook = scene_index == 0
@@ -207,15 +209,15 @@ def stage2_scene(outline_meta: dict, scene_skel: dict, scene_index: int, budget)
             data.setdefault("scene", scene_skel.get("scene", scene_index + 1))
             data.setdefault("actor", scene_skel.get("actor", ""))
             data.setdefault("tags", scene_skel.get("tags", []))
-            data.setdefault("speaker_role", "narrator")
+            data.setdefault("audio_directive", {"narrator_text": "", "character_text": ""})
+            
             if scene_skel.get("no_ad"):    data["no_ad"] = True
             if scene_skel.get("is_glitch"): data["is_glitch"] = True
             if is_hook and "image_prompt" in data:
                 data.pop("image_prompt", None)
             validate(data, schema)
-            log.info("scene %d OK (key …%s) role=%s%s",
-                     data["scene"], key[-6:], data.get("speaker_role"),
-                     " [HOOK]" if is_hook else "")
+            log.info("scene %d OK (key …%s)%s",
+                     data["scene"], key[-6:], " [HOOK]" if is_hook else "")
             return data
         except (json.JSONDecodeError, ValidationError) as e:
             last_err = str(e)[:200]
@@ -231,33 +233,31 @@ def stage2_scene(outline_meta: dict, scene_skel: dict, scene_index: int, budget)
             except Exception: pass
     raise RuntimeError(f"Scene {scene_skel.get('scene')} thất bại trên toàn bộ key.")
 
-
 # ---------- Enforce ngân sách 1000 ký tự cho character ----------
 
 def _enforce_character_budget(scenes: List[Dict]) -> None:
     cap = getattr(settings, "max_character_dialogue_chars", 1000)
-    total = sum(len((s.get("dialogue") or "")) for s in scenes
-                if s.get("speaker_role") == "character")
+    total = sum(len(s.get("audio_directive", {}).get("character_text") or "") for s in scenes)
     if total <= cap:
         return
     log.warning("Character dialogue %d ký tự > cap %d — cắt dần từ cuối.", total, cap)
-    # Quét NGƯỢC: chuyển các scene 'character' cuối sang 'narrator' cho tới khi đạt cap
+    
+    # Quét NGƯỢC: cắt chữ từ các scene cuối cho tới khi đạt cap
     for s in reversed(scenes):
         if total <= cap: break
-        if s.get("speaker_role") != "character": continue
-        d = s.get("dialogue") or ""
-        if total - len(d) <= cap:
-            # cắt 1 phần chuỗi cuối của scene này
-            keep = max(0, cap - (total - len(d)))
-            s["dialogue"] = d[:keep].rstrip()
-            total = total - len(d) + len(s["dialogue"])
-            log.info("Cắt scene %s xuống %d ký tự.", s.get("scene"), len(s["dialogue"]))
+        char_text = s.get("audio_directive", {}).get("character_text", "")
+        if not char_text: continue
+        
+        if total - len(char_text) <= cap:
+            keep = max(0, cap - (total - len(char_text)))
+            s["audio_directive"]["character_text"] = char_text[:keep].rstrip()
+            total = total - len(char_text) + len(s["audio_directive"]["character_text"])
+            log.info("Cắt thoại nhân vật scene %s xuống %d ký tự.", s.get("scene"), len(s["audio_directive"]["character_text"]))
         else:
-            # Hạ luôn cả scene xuống narrator để giải phóng budget
-            s["speaker_role"] = "narrator"
-            total -= len(d)
-            log.info("Hạ scene %s xuống narrator.", s.get("scene"))
-
+            # Hạ luôn thoại character
+            s["audio_directive"]["character_text"] = ""
+            total -= len(char_text)
+            log.info("Xóa trắng thoại nhân vật scene %s.", s.get("scene"))
 
 def generate_script(alchemy_prompt: str, scenes: int, budget) -> dict:
     outline = stage1_outline(alchemy_prompt, scenes, budget)
@@ -272,6 +272,7 @@ def generate_script(alchemy_prompt: str, scenes: int, budget) -> dict:
         "emotion_tag":   meta["emotion_tag"],
         "scenes":        enriched,
     }
+
 def get_director_system_prompt():
     return """
     Ngươi là Tổng Đạo Diễn CHIMERA. Nhiệm vụ của ngươi là viết chi tiết 15 phân cảnh dựa trên Khung Xương đã duyệt.
@@ -289,32 +290,8 @@ def get_director_system_prompt():
     
     LUẬT SINH TỒN: Tổng số ký tự của tất cả các trường "character_text" trong toàn bộ 15 phân cảnh TUYỆT ĐỐI KHÔNG ĐƯỢC VƯỢT QUÁ 1.000 KÝ TỰ. Hãy để thoại nhân vật thật ngắn gọn, sắc lẹm và mang tính sát thương cao.
     """
-  
 
 def extract_hook_video_prompt(script: dict) -> str:
     scenes = script.get("scenes") or []
     if not scenes: return ""
     return (scenes[0].get("cinematic_video_prompt") or "").strip()
-def get_director_system_prompt():
-    return """
-    Ngươi là Tổng Đạo Diễn CHIMERA. Nhiệm vụ của ngươi là viết chi tiết 15 phân cảnh dựa trên Khung Xương đã duyệt.
-    
-    BẢO TOÀN CẤU TRÚC GIAO DIỆN (UI): Phải trả về chính xác 15 phân cảnh, không thêm, không bớt.
-    
-    [KỶ LUẬT HÌNH ẢNH MẶC ĐỊNH]
-    Cấu trúc mảng 'scenes' phải tuân thủ nghiêm ngặt:
-    - DUY NHẤT Scene 1: KHÔNG CÓ trường 'image_prompt'. BẮT BUỘC phải có trường 'cinematic_video_prompt' (Mô tả camera, ánh sáng bằng Tiếng Anh để tạo video điện ảnh).
-    - TỪ Scene 2 ĐẾN Scene 15: KHÔNG ĐƯỢC CÓ 'cinematic_video_prompt'. BẮT BUỘC phải có trường 'image_prompt' (Mô tả ảnh tĩnh bằng Tiếng Anh).
-    
-    [KỶ LUẬT ÂM THANH - QUẢN TRỊ NGÂN SÁCH]
-    Mỗi Scene phải có `audio_directive` chứa `speaker_role`.
-    - `narrator`: Lời dẫn chuyện (không giới hạn ký tự).
-    - `character`: Lời thoại nhân vật. LUẬT SINH TỒN: Tổng số ký tự có nhãn `character` trong cả 15 phân cảnh KHÔNG ĐƯỢC VƯỢT QUÁ 1.000 KÝ TỰ.
-    """
-
-# (Schema tham khảo cho hàm API của bạn)
-# "scenes": [
-#   { "scene_id": 1, "cinematic_video_prompt": "...", "audio_directive": {"speaker_role": "character"} },
-#   { "scene_id": 2, "image_prompt": "...", "audio_directive": {"speaker_role": "narrator"} }
-# ]
-
