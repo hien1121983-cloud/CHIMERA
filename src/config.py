@@ -78,6 +78,9 @@ class Settings:
     elevenlabs_monthly_quota: int = 10_000
     edge_voice: str = os.getenv("EDGE_VOICE", "vi-VN-NamMinhNeural")
     gtts_lang: str = "vi"
+    edge_voice_narrator: str = os.getenv("EDGE_VOICE_NARRATOR", "vi-VN-HoaiMyNeural")
+    # LUẬT SINH TỒN: tổng dialogue của các scene speaker_role=character
+    max_character_dialogue_chars: int = int(os.getenv("MAX_CHAR_DIALOGUE", "1000"))
 
     # ===== Assets tĩnh =====
     assets_dir: Path = _PROJECT_ROOT / "assets"
