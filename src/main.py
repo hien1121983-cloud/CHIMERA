@@ -1,5 +1,4 @@
 """Project Chimera — orchestrator V4.0 (2-stage, anti-deadlock).
-
 Stage A (``--stage produce_script``)
     1. Aggregator T1 — gom đủ 7 khối dữ liệu đầu vào.
     2. Monte Carlo sinh N nhánh **SKELETON** (KHÔNG gọi LLM, KHÔNG sinh chi tiết).
@@ -7,7 +6,6 @@ Stage A (``--stage produce_script``)
     4. "Anh T" chống trùng lặp trên skeleton. Nếu thiếu -> Monte Carlo sinh bù.
        Quá ``anh_t_max_dup_retries`` -> ép đột biến (hidden_item + dice).
     5. Gửi Telegram TÓM TẮT 3 khung -> tạm dừng máy ảo.
-
 Stage B (``--stage assemble --episode-id ... --version ...``)
     1. Đánh thức Trạm 3 (Director LLM) cho ĐÚNG khung đã duyệt -> viết chi tiết.
     2. Render scene 2..N + TTS (hybrid theo speaker_role).
@@ -45,23 +43,6 @@ log = get_logger("main")
 ROOT = Path(__file__).resolve().parent.parent
 DATA = ROOT / "data"
 ADS = ROOT / "ads"
-
-def run_phase_1():
-    print("🚀 BẮT ĐẦU PHASE 1: LÊN KHUNG Ý TƯỞNG")
-    # 1. Gom Data -> Sinh Skeletons -> Anh T Lọc
-    # 2. Lấy Top 3 Skeletons
-    # 3. Gửi Text qua Telegram cho Showrunner
-    
-    print("✅ Đã gửi Telegram. TẮT MÁY ẢO để tiết kiệm Action Minutes!")
-    sys.exit(0) # Lệnh chốt hạ chặn Timeout
-
-def run_phase_2(approved_skeleton):
-    print("🚀 BẮT ĐẦU PHASE 2: SẢN XUẤT MEDIA (ĐÃ CÓ LỆNH DUYỆT)")
-    # 1. Gọi LLM viết chi tiết 15 Scene
-    # 2. Sinh Audio (TTS Rotator) & Ảnh tĩnh (Pollinations)
-    # 3. Gọi FFmpeg render tách khối
-    # 4. Lưu vào Canon History
-
 
 
 def _install_soft_timeout(seconds: int) -> None:
@@ -277,7 +258,6 @@ def _parse_args() -> argparse.Namespace:
     p.add_argument("--version", type=int, default=1)
     return p.parse_args()
 
-
 def main() -> int:
     args = _parse_args()
     if args.stage == "produce_script":
@@ -288,10 +268,8 @@ def main() -> int:
         return run_assemble(args.episode_id, args.version)
     return 64
 
-
 def run() -> int:
     return main()
-
 
 if __name__ == "__main__":
     sys.exit(main())
