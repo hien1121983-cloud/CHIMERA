@@ -84,10 +84,11 @@ class T0dRDE(BaseStation):
             except Exception:
                 pass  # Fail-safe
 
-        try:
-            items.extend(self._fetch_google_trends())
-        except Exception:
-            pass
+        # FIX #3: Log WARNING ro rang de biet du lieu trend dang thieu.
+        # Truoc day ham tra ve [] im lang -> RDE khong bao gio co trend data
+        # ma khong ai biet, khien context thieu chieu sau.
+        trends = self._fetch_google_trends()
+        items.extend(trends)
 
         return items[:90]
 
@@ -148,5 +149,22 @@ class T0dRDE(BaseStation):
         return RDEOutput(**result)
 
     def _fetch_google_trends(self) -> List[Dict]:
-        """Gia lap fetch Google Trends."""
+        """Lay du lieu Google Trends.
+
+        FIX #3: Truoc day ham nay tra ve [] im lang khien RDE luon thieu
+        du lieu trend ma khong co canh bao nao. Nay log WARNING ro rang
+        moi lan chay de nhan biet va theo doi.
+
+        TODO: Tich hop pytrends hoac SerpAPI:
+            from pytrends.request import TrendReq
+            pytrends = TrendReq(hl='vi', tz=420)
+            pytrends.build_payload(['...'], timeframe='now 1-d', geo='VN')
+            return pytrends.interest_over_time().reset_index().to_dict('records')
+        """
+        logger.warning(
+            "[T0d] _fetch_google_trends() CHUA DUOC IMPLEMENT. "
+            "Du lieu xu huong (trends) se BI THIEU trong tap nay, "
+            "anh huong den chieu sau cua world pressures. "
+            "Xem TODO trong fetchers/t0d_rde.py de implement."
+        )
         return []
