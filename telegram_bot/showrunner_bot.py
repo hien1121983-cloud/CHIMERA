@@ -1,6 +1,5 @@
 """FastAPI webhook + asyncio.Event de cho Showrunner duyet (Va M-07)."""
 import os
-import json
 import asyncio
 import logging
 import threading
@@ -8,6 +7,8 @@ from contextlib import asynccontextmanager
 
 import uvicorn
 from fastapi import FastAPI, Request
+
+from config.settings import settings
 
 logger = logging.getLogger(__name__)
 
@@ -69,6 +70,7 @@ def launch_webhook_in_background(host: str = "0.0.0.0", port: int = 8443):
 
 async def send_approval_request(text: str, video_summary: dict = None):
     """Gui yeu cau duyet kem inline keyboard."""
+    global _approval_decision
     import telegram
     from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
@@ -85,7 +87,12 @@ async def send_approval_request(text: str, video_summary: dict = None):
             )
         ],
     ])
+    # FIX #2: Reset ca event lan decision truoc khi gui yeu cau moi.
+    # Truoc day chi clear event nhung _approval_decision van giu gia tri cu,
+    # neu webhook duoc goi truoc wait() thi gia tri cu se duoc tra ve.
+    _approval_decision = None
     _approval_event.clear()
+
     await bot.send_message(
         chat_id=os.getenv("TELEGRAM_CHAT_ID"),
         text=text,
@@ -95,10 +102,34 @@ async def send_approval_request(text: str, video_summary: dict = None):
 
 
 async def wait_for_showrunner(timeout: float = None) -> str:
-    """Ngu cho den khi Showrunner bam nut (Va M-07: cung event loop)."""
+    """Ngu cho den khi Showrunner bam nut.
+
+    FIX #2: Truoc day timeout=None -> pipeline treo vinh vien neu Showrunner
+    khong phan hoi. Nay dung settings.SHOWRUNNER_TIMEOUT_HOURS lam default.
+    Caller co the override bang tham so timeout (tinh bang giay).
+    """
     global _approval_decision
-    if timeout:
-        await asyncio.wait_for(_approval_event.wait(), timeout=timeout)
-    else:
-        await _approval_event.wait()
-    return _approval_decision
+
+    effective_timeout = timeout if timeout is not None else (settings.SHOWRUNNER_TIMEOUT_HOURS * 3600)
+
+    logger.info(
+        f"[ShowrunnerBot] Cho Showrunner duyet "
+        f"(timeout={effective_timeout / 3600:.1f}h)..."
+    )
+
+    try:
+        await asyncio.wait_for(_approval_event.wait(), timeout=effective_timeout)
+    except asyncio.TimeoutError:
+        logger.critical(
+            f"[ShowrunnerBot] Showrunner khong phan hoi trong "
+            f"{settings.SHOWRUNNER_TIMEOUT_HOURS:.1f} gio. "
+            f"Pipeline bi huy tu dong."
+        )
+        raise TimeoutError(
+            f"Showrunner timeout sau {settings.SHOWRUNNER_TIMEOUT_HOURS:.1f} gio. "
+            f"Kiem tra Telegram bot va thu lai."
+        )
+
+    decision = _approval_decision
+    logger.info(f"[ShowrunnerBot] Showrunner da quyet dinh: {decision}")
+    return decision
