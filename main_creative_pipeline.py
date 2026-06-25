@@ -32,19 +32,20 @@ async def run_stage_2(master_payload: dict) -> dict:
     alchemist = A1Alchemist()
     auditor = T3Auditor()
 
-    # FIX #11: Vong lap retry su dung AUDITOR_MAX_RETRY.
-    # Truoc day chi goi A1 mot lan, neu all 3 drafts fail similarity
-    # thi van gui len Showrunner ma khong co co hoi viet lai.
-    # Nay: neu audit tra ve "should_retry", goi lai A1 toi da max_retry lan
-    # truoc khi de Showrunner quyet dinh tren draft tot nhat con lai.
+    # FIX #11 & CRITICAL BUG: Vong lap retry hoan chinh.
+    # Truyen warning_msg tro lai A1 de ep LLM doi huong sang tao.
     best_draft = None
     last_audit_result = None
+    warning_msg = None
 
     for attempt in range(1, settings.AUDITOR_MAX_RETRY + 1):
         logger.info(f"[Stage2] A1 + Audit attempt {attempt}/{settings.AUDITOR_MAX_RETRY}")
 
-        # 1. A1 sinh 3 drafts
-        drafts = alchemist.generate_3_drafts(master_payload)
+        # 1. A1 sinh 3 drafts (Neu co warning tu vong truoc -> Goi ham kem warning)
+        if warning_msg:
+            drafts = alchemist.generate_3_drafts_with_warning(master_payload, warning_msg)
+        else:
+            drafts = alchemist.generate_3_drafts(master_payload)
 
         # 2. Auditor kiem duyet
         audit_result = auditor.audit(drafts, mandatory)
@@ -71,12 +72,13 @@ async def run_stage_2(master_payload: dict) -> dict:
             )
             break
         elif status == "should_retry" and attempt < settings.AUDITOR_MAX_RETRY:
-            # Similarity qua cao -> retry A1
+            # Similarity qua cao -> luu ly do de retry A1
             logger.warning(
                 f"[Stage2] Audit should_retry (attempt {attempt}). "
                 f"Reason: {audit_result.get('reason')}. "
-                f"Goi lai A1..."
+                f"Goi lai A1 kem canh bao..."
             )
+            warning_msg = audit_result.get('reason')
             continue
         elif status == "rejected":
             # Tat ca drafts thieu mandatory tasks -> khong the tiep tuc
@@ -196,3 +198,4 @@ async def main():
 if __name__ == "__main__":
     setup_logging()
     asyncio.run(main())
+    
