@@ -1,70 +1,30 @@
 {
-  "entity_id": "{GENERATED_BY_PYTHON_RNG}",
-  "full_name": "{GENERATED_BY_PYTHON_RNG}",
-  "blueprint_origin": "bp_03_deepseek",
-  "core_data": {
-    "_blueprint_philosophy": "Con người bị giới hạn bởi thể xác và nguồn lực. Mâu thuẫn sinh ra từ nút thắt cổ chai về sức khỏe, giới hạn thể lực, áp lực dòng tiền và sự lựa chọn sinh tử trong hoảng loạn.",
-    
-    "1_physical_substrate_and_biometrics": {
-      "vital_signs_base": {
-        "cellular_age_vs_chronological": "Integer (-20 to +20) (Tuổi tế bào so với tuổi thực, nếu già hơn tuổi thực sẽ thúc đẩy hành động tuyệt vọng)",
-        "energy_stamina_capacity": "Integer 1-100 (Giới hạn cho các pha hành động căng thẳng, ví dụ: chạy trốn)"
+    "blueprint_id": "bp_03_deepseek",
+    "archetype_name": "Kẻ Sinh Tồn Hoang Tưởng (The Paranoid Survivor)",
+    "elevenlabs_voice_desc": "Giọng nam thấp, khô khan, thì thầm, nói rất nhanh và hay nuốt chữ như thể sợ ai đó nghe lén.",
+    "inner_conflict_pool": [
+      "Luôn tin rằng có một thế lực ngầm đang giám sát mọi hành động của mình.",
+      "Giấu vũ khí ở mọi nơi trong nhà, kể cả dưới gối và trong bồn cầu.",
+      "Không tin tưởng bất kỳ ai, ngay cả chính những ký ức của bản thân.",
+      "Mắc kẹt giữa mong muốn được cứu rỗi và bản năng phải bỏ chạy.",
+      "Từng bị phản bội cay đắng nên thà giết nhầm còn hơn bỏ sót.",
+      "Tính toán mọi đường thoát hiểm ngay khi vừa bước vào một căn phòng.",
+      "Ám ảnh với việc thu thập thông tin mã hóa và thuyết âm mưu.",
+      "Tự hủy hoại các mối quan hệ tốt đẹp vì nghi ngờ đối phương là gián điệp.",
+      "Luôn có một vali tiền mặt và hộ chiếu giả sẵn sàng dưới gầm giường.",
+      "Bị mất ngủ triền miên vì những cơn ác mộng về ngày tận thế."
+    ],
+    "core_data": {
+      "_blueprint_philosophy": "Kẻ sống sót cuối cùng là kẻ biết nín thở lâu nhất trong bóng tối.",
+      "1_base_stats_matrix_1_100": {
+        "physical_and_survival": { "health": 85, "stamina": 95, "stealth": 100, "combat": 70, "pain_tolerance": 90 },
+        "social_and_power": { "charisma": 10, "manipulation": 40, "status": 20, "intimidation": 60, "networking": 5 },
+        "moral_and_flaws": { "empathy": 30, "greed": 20, "betrayal_tendency": 80, "narcissism": 10, "guilt_capacity": 40 }
       },
-      "acquired_marks": {
-        "scars": "Array[{location: String, cause_timestamp: ISO8601}] (Vật chứng cho lần suýt chết hoặc sai lầm quá khứ)",
-        "addictions_chemical": "Array[{substance: String, dependency_level: Integer 1-100}] (Nhu cầu cấp bách hàng ngày, làm suy yếu khả năng ra quyết định đạo đức)"
-      }
-    },
-
-    "2_socio_economics_and_material_resources": {
-      "capital_flow": {
-        "liquid_assets_cash": "Float (Áp lực tài chính trực tiếp, ví dụ: thiếu tiền mặt để cứu người ngay lập tức)",
-        "debt_liabilities": "Array[{creditor: String, amount: Float, deadline: ISO8601}] (Kẻ thù vô hình gây sức ép thời gian)",
-        "income_streams": "Array[{source: String, stability_index: Integer 1-100}] (Mất nguồn thu bất ngờ tạo khủng hoảng sinh tồn)"
-      },
-      "class_and_privilege": {
-        "socio_economic_class": "Enum [LUMPEN, WORKING, MIDDLE, UPPER_MIDDLE, ELITE, RULING] (Xác định đặc quyền tiếp cận hệ thống y tế, pháp lý)",
-        "social_mobility_trend": "Float (-100 to +100) (Nỗ lực leo lên hoặc sợ hãi rơi xuống là động lực chính)"
-      }
-    },
-
-    "3_cognitive_capabilities_and_acquired_skills": {
-      "intelligence_metrics": {
-        "iq_fluid": "Integer 1-100 (Giải quyết vấn đề mới; giới hạn khả năng thoát khỏi bẫy logic)",
-        "iq_crystallized": "Integer 1-100 (Vốn kiến thức; xung đột với văn hóa mới)"
-      },
-      "survival_and_professional_skills": "Array[{skill_name: String, proficiency: Integer 1-100, decay_rate: Float}] (Kỹ năng lỗi thời gây trớ trêu; kỹ năng hiếm tạo độc quyền giải quyết plot)"
-    },
-
-    "4_behavioral_micro_patterns_and_operators": {
-      "panic_response_protocol": "Enum [FREEZE, FIGHT, FLIGHT, FAINT, FAWN] (Quyết định hành động cứu mạng hay gây chết người trong khủng hoảng)",
-      "deception_patterns": {
-        "tell_under_stress": "String (Dấu hiệu khi nói dối, ví dụ: chạm mũi, nói lắp, bị thẩm vấn khai thác)",
-        "default_lie_archetype": "Enum [OMISSION, EXAGGERATION, FABRICATION, GASLIGHTING] (Loại nói dối đặc trưng)"
-      },
-      "micro_habits": "Array[{trigger: String, action: String, consciousness_level: Enum [AUTOMATIC, SEMI_CONSCIOUS]}] (Trở thành chữ ký khiến nhân vật bị nhận dạng dù cải trang)"
-    },
-
-    "5_psychological_core_and_architectural_drivers": {
-      "deep_motivation_engines": {
-        "conscious_want": "String (Điều nhân vật nghĩ mình muốn, thường là vỏ bọc)",
-        "unconscious_need": "String (Điều nhân vật thực sự cần, xung đột Want vs Need tạo bi kịch)",
-        "self_narrative_lie": "String (Lời nói dối tự thuyết phục, thực tế đập tan lời nói dối này là cao trào chính)"
-      }
-    },
-
-    "6_vulnerability_landscape_and_fatal_flaws": {
-      "psychological_achilles_heel": "String (Tử huyệt tâm lý cụ thể; kẻ thù đâm vào đây để hạ gục mà không cần vũ khí)",
-      "moral_event_horizon": "Array[String] (Hành động nhân vật KHÔNG BAO GIỜ làm; bị ép phải làm tạo ra bi kịch thuần túy, vượt qua nó đánh dấu sự tha hóa hoàn toàn)",
-      "destroyable_secrets": "Array[{secret_content: String, impact_severity: Integer 1-100}] (Bị lộ sẽ hủy hoại mạng lưới xã hội)"
-    },
-
-    "7_narrative_dynamic_indicators": {
-      "agency_drive_quotient": "Integer 1-100 (Mức độ chủ động; điểm thấp dễ bị kéo đi trong plot, điểm cao tự tạo rủi ro)",
-      "destiny_tension_tracker": {
-        "time_to_deadline_in_days": "Integer (Đếm ngược thời gian trước khi một lời tiên tri hoặc cái giá phải trả ập đến)"
-      }
+      "2_biometrics_and_health": { "blood_type": "B", "hidden_disease": "Rối loạn hoang tưởng (Paranoia), suy dinh dưỡng nhẹ." },
+      "3_economy_and_skills": { "income_source": "Tiền mã hóa (Crypto), công việc tự do ẩn danh.", "hidden_debt": "Bị truy nã ngầm bởi một băng đảng.", "core_skill": "Lẩn trốn, bẻ khóa và sinh tồn đô thị." },
+      "4_social_network": { "class": "Tầng lớp dưới đáy (Underground)", "allies": "Không có", "hidden_enemies": "Các tổ chức quyền lực mà hắn tin là đang đuổi theo mình." },
+      "5_micro_habits": { "lie_tell": "Nhìn chằm chằm vào lối ra khi đang bịa chuyện.", "stress_tick": "Sờ liên tục vào con dao giấu trong áo khoác." },
+      "6_blindspots_and_risks": { "fatal_flaw": "Sự nghi ngờ thái quá khiến hắn tự cô lập và dồn mình vào chỗ chết.", "blackmail_secret": "Đã giết một người vô tội vì tưởng nhầm là sát thủ." }
     }
-  }
 }
-
