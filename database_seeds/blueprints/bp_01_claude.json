@@ -1,72 +1,30 @@
 {
-  "entity_id": "{GENERATED_BY_PYTHON_RNG}",
-  "full_name": "{GENERATED_BY_PYTHON_RNG}",
-  "blueprint_origin": "bp_01_claude",
-  "core_data": {
-    "_blueprint_philosophy": "Tập trung vào tổn thương gốc rễ, sự tự lừa dối, xu hướng nghiện ngập và các thiên kiến nhận thức phá hoại quyết định.",
-    
-    "psychological_core": {
-      "trauma_architecture": {
-        "root_traumas": [
-          {
-            "event_category": "Enum [ABANDONMENT, ABUSE, LOSS, HUMILIATION, BETRAYAL]",
-            "age_at_occurrence": "Integer",
-            "compensation_mechanism": "String (Cơ chế bù đắp tâm lý)",
-            "processed": "Boolean (false = vẫn điều khiển hành vi từ trong bóng tối)"
-          }
-        ]
+    "blueprint_id": "bp_01_claude",
+    "archetype_name": "Kẻ Đạo Đức Giả Thao Túng (The Moral Hypocrite)",
+    "elevenlabs_voice_desc": "Giọng nam trung, ấm áp, nhã nhặn, có vẻ cực kỳ đáng tin cậy nhưng pha lẫn sự trịch thượng ngầm.",
+    "inner_conflict_pool": [
+      "Luôn rao giảng về đạo đức nhưng lại có những sở thích bí mật dơ bẩn nhất.",
+      "Sợ hãi tột cùng việc bị công chúng phát hiện ra bản chất thật.",
+      "Tin rằng mình đang làm việc xấu để bảo vệ một 'lợi ích lớn lao hơn'.",
+      "Thích cứu rỗi những kẻ yếu thế chỉ để thỏa mãn cảm giác mình là Chúa tể.",
+      "Ám ảnh cưỡng chế với sự sạch sẽ thể xác để bù đắp cho tâm hồn mục nát.",
+      "Nghiện cảm giác được người khác mang ơn và quỵ lụy.",
+      "Ghen tị với những người thực sự ngây thơ và tốt bụng, muốn hủy hoại họ.",
+      "Sẵn sàng hủy hoại cả một sự nghiệp của người khác chỉ vì một câu xúc phạm nhỏ.",
+      "Luôn đóng vai nạn nhân khi bị dồn vào chân tường.",
+      "Có một cuốn sổ ghi chép lại mọi lỗi lầm của người khác để tống tiền khi cần."
+    ],
+    "core_data": {
+      "_blueprint_philosophy": "Tôi không làm điều ác, tôi chỉ đang dọn dẹp rác rưởi của xã hội theo cách của riêng mình.",
+      "1_base_stats_matrix_1_100": {
+        "physical_and_survival": { "health": 60, "stamina": 50, "stealth": 85, "combat": 30, "pain_tolerance": 40 },
+        "social_and_power": { "charisma": 95, "manipulation": 100, "status": 80, "intimidation": 40, "networking": 90 },
+        "moral_and_flaws": { "empathy": 15, "greed": 75, "betrayal_tendency": 90, "narcissism": 95, "guilt_capacity": 5 }
       },
-      "attachment_profile": {
-        "attachment_style": "Enum [SECURE, ANXIOUS, AVOIDANT, DISORGANIZED]",
-        "intimacy_ceiling": "Integer 1-100 (Mức độ gần gũi tối đa chịu đựng được trước khi đẩy người khác ra xa)"
-      },
-      "self_concept_matrix": {
-        "feared_self": "String (Hình mẫu nhân vật sợ phải trở thành nhất)",
-        "self_image_reality_gap": "Integer 1-100 (Khoảng cách giữa hoang tưởng và thực tại)",
-        "core_belief_system": "Array[String] (Ví dụ: 'Không ai yêu thương vô điều kiện')"
-      },
-      "want_vs_need_conflict": {
-        "conscious_want": "String (Khao khát bề nổi vật chất/xã hội)",
-        "unconscious_need": "String (Nhu cầu vô thức để chữa lành tâm hồn)"
-      }
-    },
-
-    "behavioral_micro_traits": {
-      "personality_model_ocean": {
-        "neuroticism": "Integer 1-100 (Bất ổn cảm xúc - Cao = Phản ứng cực đoan khi bị kích động)",
-        "agreeableness": "Integer 1-100 (Dễ chịu - Thấp = Luôn gây hấn)"
-      },
-      "communication_profile": {
-        "base_communication_style": "Enum [ASSERTIVE, PASSIVE, AGGRESSIVE, PASSIVE_AGGRESSIVE]",
-        "deception_tells": "Array[{tell_behavior: String, trigger_context: String}] (Hành vi vô thức khi nói dối)"
-      },
-      "stress_and_crisis_response": {
-        "primary_stress_response": "Enum [FIGHT, FLIGHT, FREEZE, FAWN]",
-        "panic_behaviors": "Array[String] (Hành vi xuất hiện khi hoảng loạn cực độ)",
-        "emotional_regulation_score": "Integer 1-100 (Thấp = Ra quyết định tồi tệ dưới áp lực)"
-      },
-      "addiction_compulsion_profile": {
-        "addictions": "Array[{type: Enum [SUBSTANCE, BEHAVIORAL, RELATIONAL], severity: Integer 1-100, concealed: Boolean}]",
-        "compulsions": "Array[{behavior: String, ego_syntonic: Boolean}]"
-      },
-      "decision_making_profile": {
-        "cognitive_biases_dominant": "Array[String] (Thiên kiến nhận thức, VD: Confirmation Bias, Sunk-cost)",
-        "moral_licensing_tendency": "Integer 1-100 (Xu hướng biện minh cho hành vi xấu sau khi làm việc tốt)"
-      }
-    },
-
-    "health_and_mental_state": {
-      "mental_health_diagnoses": "Array[{condition: String, insight_level: Integer 1-100 (Thấp = Rất nguy hiểm)}]",
-      "chronic_conditions": "Array[{condition_name: String, treatment_cost_usd: Float, affects_capability: Boolean}]",
-      "biological_clock_pressure": "Boolean (Áp lực sinh học thúc đẩy quyết định phi lý)"
-    },
-
-    "socio_economics_and_hierarchy": {
-      "class_trajectory": "Enum [ASCENDING, STABLE, DECLINING, VOLATILE] (Độ chênh lệch tạo ra sự kiêu ngạo hoặc mặc cảm)",
-      "monthly_burn_rate_usd": "Float (Áp lực chi tiêu hàng tháng)",
-      "soft_power_assets": "Array[{asset_type: Enum [SECRETS, FEAR, LOYALTY, SEX, REPUTATION], leverage_potential: Integer 1-100}]",
-      "inner_circle": "Array[{target_id: UUID, emotional_dependency: Integer 1-100, shared_secrets: Boolean}]"
+      "2_biometrics_and_health": { "blood_type": "AB", "hidden_disease": "Mất ngủ mãn tính, luôn phải dùng thuốc an thần liều cao." },
+      "3_economy_and_skills": { "income_source": "Quỹ từ thiện bình phong, diễn giả truyền cảm hứng.", "hidden_debt": "Đang nợ một tổ chức ngầm vì thua bạc.", "core_skill": "Thao túng tâm lý (Gaslighting)." },
+      "4_social_network": { "class": "Thượng lưu giả cầy", "allies": "Giới truyền thông", "hidden_enemies": "Những nạn nhân cũ đã bị hủy hoại danh tiếng." },
+      "5_micro_habits": { "lie_tell": "Mỗi khi nói dối, luôn chắp hai bàn tay vào nhau và nghiêng đầu mỉm cười.", "stress_tick": "Cắn vào mặt trong của má đến rỉ máu." },
+      "6_blindspots_and_risks": { "fatal_flaw": "Quá tự tin vào khả năng kiểm soát trí óc người khác.", "blackmail_secret": "Có con rơi với một người giúp việc và đang giấu nhẹm." }
     }
-  }
 }
-
