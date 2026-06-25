@@ -15,6 +15,12 @@ class T3Auditor:
     def __init__(self):
         self.db = ChimeraDB()
         self.threshold = settings.SIMILARITY_THRESHOLD
+        # FIX #6: Nguong "tuyet doi tu choi" - neu fallback draft van cao hon
+        # nguong nay, tra ve status dac biet de caller biet phai retry.
+        self.hard_reject_threshold = settings.SIMILARITY_HARD_REJECT_THRESHOLD
+        # FIX #11: max_retry duoc dung trong audit() de quyet dinh status
+        # "should_retry" vs "needs_review", giup caller (main_creative_pipeline)
+        # biet co nen goi lai A1 hay khong.
         self.max_retry = settings.AUDITOR_MAX_RETRY
         self.cache = VectorCache()
         self._model = None
@@ -63,10 +69,24 @@ class T3Auditor:
         return float(sims[idx]), self.cache.texts[idx] if self.cache.texts else ""
 
     def audit(self, drafts: list, mandatory_tasks: list) -> dict:
-        """Kiem duyet danh sach drafts. Tra ve draft pass dau tien."""
+        """Kiem duyet danh sach drafts. Tra ve draft pass dau tien.
+
+        Return dict co cac fields:
+          - status: "approved" | "needs_review" | "should_retry" | "rejected"
+          - draft:  draft object hoac None
+          - similarity: float hoac None
+          - reason: mo ta ly do (cho needs_review/should_retry/rejected)
+
+        FIX #11: Phan biet ro "needs_review" (co the duyet duoc) va
+        "should_retry" (similarity qua cao, nen goi lai A1 truoc).
+        Caller (main_creative_pipeline) dung max_retry de quyet dinh
+        co retry hay gui thang len Showrunner.
+        """
         self.refresh_embeddings_if_needed()
 
-        scored = []
+        passed_mandatory = []
+        failed_mandatory = []
+
         for draft in drafts:
             # 1. Kiem tra mandatory tasks
             resolved = set(draft.get("resolved_hooks", []))
@@ -75,9 +95,26 @@ class T3Auditor:
                 logger.warning(
                     f"[Auditor] Draft {draft.get('draft_id')} thieu mandatory: {missing}"
                 )
+                failed_mandatory.append(draft)
                 continue
+            passed_mandatory.append(draft)
 
-            # 2. Kiem tra trung lap
+        # Neu khong co draft nao pass mandatory -> rejected hoan toan
+        if not passed_mandatory:
+            logger.error(
+                f"[Auditor] Tat ca {len(drafts)} drafts deu thieu mandatory tasks. "
+                f"A1 can duoc retry voi prompt nhan manh hon."
+            )
+            return {
+                "status": "rejected",
+                "draft": None,
+                "similarity": None,
+                "reason": f"Tat ca drafts thieu mandatory tasks: {list(set(mandatory_tasks))}",
+            }
+
+        # 2. Kiem tra trung lap cho cac draft da pass mandatory
+        scored = []
+        for draft in passed_mandatory:
             full_text = _serialize_draft(draft)
             max_sim, similar_text = self.check_similarity(full_text)
             draft["similarity_score"] = max_sim
@@ -85,22 +122,52 @@ class T3Auditor:
             if max_sim <= self.threshold:
                 logger.info(
                     f"[Auditor] Draft {draft.get('draft_id')} PASS "
-                    f"(sim={max_sim:.3f})"
+                    f"(sim={max_sim:.3f} <= threshold={self.threshold:.3f})"
                 )
-                return {"status": "approved", "draft": draft, "similarity": max_sim}
+                return {
+                    "status": "approved",
+                    "draft": draft,
+                    "similarity": max_sim,
+                    "reason": "ok",
+                }
 
-            scored.append((max_sim, draft))
+            scored.append((max_sim, draft, similar_text))
 
-        # Fallback cuoi cung: tra ve draft co similarity thap nhat
-        if scored:
-            scored.sort(key=lambda x: x[0])
+        # Fallback: tat ca drafts deu vuot nguong similarity
+        scored.sort(key=lambda x: x[0])
+        best_sim, best_draft, similar_text = scored[0]
+
+        # FIX #6 + #11: Phan biet muc do nghiem trong de caller xu ly dung.
+        # - should_retry: similarity > hard_reject_threshold -> A1 can viet lai hoan toan
+        # - needs_review: threshold < sim <= hard_reject -> Showrunner co the tha thu
+        if best_sim > self.hard_reject_threshold:
             logger.critical(
-                "[Auditor] Het retry. Tra ve draft it trung nhat de Showrunner quyet dinh."
+                f"[Auditor] Fallback draft co similarity={best_sim:.3f} "
+                f"VUOT NGUONG CUNG ({self.hard_reject_threshold:.3f}). "
+                f"Nen retry A1 (con {self.max_retry} lan). "
+                f"Tuong tu voi: '{similar_text[:100]}...'"
             )
             return {
-                "status": "needs_review",
-                "draft": scored[0][1],
-                "similarity": scored[0][0],
+                "status": "should_retry",
+                "draft": best_draft,
+                "similarity": best_sim,
+                "reason": (
+                    f"Similarity {best_sim:.3f} > hard_reject={self.hard_reject_threshold:.3f}. "
+                    f"Noi dung qua giong tap cu."
+                ),
             }
 
-        return {"status": "rejected", "draft": None, "similarity": None}
+        # Similarity vuot threshold nhung chua den muc cung -> gui Showrunner quyet
+        logger.warning(
+            f"[Auditor] Fallback: tra ve draft it trung nhat "
+            f"(sim={best_sim:.3f}) de Showrunner quyet dinh."
+        )
+        return {
+            "status": "needs_review",
+            "draft": best_draft,
+            "similarity": best_sim,
+            "reason": (
+                f"Similarity {best_sim:.3f} > threshold={self.threshold:.3f} "
+                f"nhung < hard_reject={self.hard_reject_threshold:.3f}."
+            ),
+        }
