@@ -62,3 +62,62 @@ class A1Alchemist:
             logger.error(f"[A1] Loi goi Gemini: {e}")
             GEMINI_POOL.mark_failed(key)
             return self.generate_3_drafts(master_payload, _attempt + 1)
+
+    def generate_3_drafts_with_warning(self, master_payload: dict, warning: str, _attempt: int = 0) -> list:
+        """Sinh 3 ban nhap voi canh bao dac biet tu Auditor (Va loi Retry).
+        
+        Ep nhiet do (temperature) len 1.0 va tiem canh bao vao system_prompt
+        de LLM bat buoc phai sang tao mot huong di hoan toan khac.
+        """
+        import google.generativeai as genai
+
+        max_attempts = GEMINI_POOL.active_count + 1
+        if _attempt >= max_attempts:
+            raise RuntimeError(
+                f"[A1] Tat ca {GEMINI_POOL.active_count} Gemini key da that bai "
+                f"sau {_attempt} lan thu (khi dang retry voi warning)."
+            )
+
+        key = GEMINI_POOL.get_next()
+        if not key:
+            raise RuntimeError("[A1] Khong co Gemini key kha dung.")
+
+        try:
+            genai.configure(api_key=key)
+            
+            # Tiem canh bao vao thang system instruction
+            dynamic_system_prompt = (
+                A1_SYSTEM_PROMPT + 
+                f"\n\n[WARNING FROM AUDITOR - BAT BUOC PHAI DOC]\n{warning}\n"
+                f"YEU CAU: Hay sang tao mot huong di, cot truyen hoan toan khac biet so voi ban truoc do!"
+            )
+            
+            model = genai.GenerativeModel(
+                self.model_name,
+                system_instruction=dynamic_system_prompt,
+            )
+            
+            response = model.generate_content(
+                json.dumps(master_payload, ensure_ascii=False, default=str),
+                generation_config={
+                    "response_mime_type": "application/json",
+                    "response_schema": A1Output,
+                    "temperature": 1.0,  # Tang nhiet do toi da de ep thoat khoi loi mon
+                },
+            )
+            data = json.loads(response.text)
+            validated = A1Output(**data)
+            logger.info(
+                f"[A1] Sinh thanh cong 3 drafts (kem WARNING). "
+                f"Creativity scores: {[d.creativity_score for d in validated.drafts]}"
+            )
+            return validated.model_dump()["drafts"]
+        except json.JSONDecodeError as e:
+            logger.error(f"[A1] JSON parse loi (khi xu ly warning): {e}")
+            GEMINI_POOL.mark_failed(key)
+            return self.generate_3_drafts_with_warning(master_payload, warning, _attempt + 1)
+        except Exception as e:
+            logger.error(f"[A1] Loi goi Gemini (khi xu ly warning): {e}")
+            GEMINI_POOL.mark_failed(key)
+            return self.generate_3_drafts_with_warning(master_payload, warning, _attempt + 1)
+            
