@@ -1,0 +1,56 @@
+{
+  "fear_of_replacement": {
+    "fantasy": "pháp sư bị golem thay thế",
+    "sci_fi": "người và AI yêu nhau",
+    "school_life": "tình yêu thầy trò bị cấm",
+    "wuxia": "chính tà yêu nhau"
+  },
+  "power_vacuum": {
+    "fantasy": "ngai vàng bỏ trống",
+    "sci_fi": "CEO đột ngột mất tích",
+    "school_life": "hiệu trưởng từ chức",
+    "wuxia": "minh chủ võ lâm biến mất"
+  },
+  "technology_backfire": {
+    "fantasy": "phép thuật cổ xưa phản chủ",
+    "sci_fi": "AI nổi loạn",
+    "school_life": "app học tập hack não",
+    "wuxia": "bí kíp phản tác dụng"
+  },
+  "social_isolation": {
+    "fantasy": "anh hùng bị dân làng xa lánh",
+    "sci_fi": "người thật duy nhất trong công ty AI",
+    "school_life": "học sinh bị tẩy chay",
+    "wuxia": "cao thủ bị võ lâm ruồng bỏ"
+  },
+  "moral_dilemma": {
+    "fantasy": "cứu 1 người hay 100 người",
+    "sci_fi": "hy sinh 1 AI để cứu 10 người",
+    "school_life": "tố giác bạn hay bao che",
+    "wuxia": "báo ân hay báo oán"
+  },
+  "lost_legacy": {
+    "fantasy": "thư viện cổ bị đốt",
+    "sci_fi": "dữ liệu nhân loại bị xóa",
+    "school_life": "truyền thống trường bị lãng quên",
+    "wuxia": "bí kíp thất truyền"
+  },
+  "hidden_truth_exposed": {
+    "fantasy": "lời tiên tri bị phơi bày",
+    "sci_fi": "bí mật công ty bị rò rỉ",
+    "school_life": "bí mật học đường bị lộ",
+    "wuxia": "âm mưu giang hồ bại lộ"
+  },
+  "economic_collapse": {
+    "fantasy": "vương quốc vỡ nợ",
+    "sci_fi": "thị trường tiền số sụp đổ",
+    "school_life": "quỹ trường cạn kiệt",
+    "wuxia": "tiêu cục phá sản"
+  },
+  "authority_distrust": {
+    "fantasy": "dân nổi dậy chống vua",
+    "sci_fi": "công dân chống tập đoàn",
+    "school_life": "học sinh chống ban giám hiệu",
+    "wuxia": "quần hùng chống minh chủ"
+  }
+}

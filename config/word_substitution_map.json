@@ -1,0 +1,9 @@
+{
+  "version": "v3",
+  "map": {
+    "giết": "tiễn vào hư vô",
+    "máu": "tinh thể đỏ",
+    "chết": "tan vào ánh sáng",
+    "dao": "lưỡi pha lê"
+  }
+}
