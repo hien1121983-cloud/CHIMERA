@@ -54,15 +54,36 @@ class WorldStateSimulator:
         )
 
     def _run_world_tick(self, tick: int):
-        """The gioi tu van hanh, khong can nhan vat chinh."""
+        """The gioi tu van hanh, khong can nhan vat chinh.
+
+        FIX #8: Truoc day dung random.randint() khong co seed -> moi lan chay
+        cho cung episode cho ket qua khac nhau, khong the reproduce bug hoac
+        audit lich su. Nay dung seed = tick XOR hash(faction_id) de:
+        - Cung tap + cung faction luon cho cung delta (reproducible).
+        - Faction khac nhau trong cung tap van cho delta khac nhau.
+        - Log chi tiet tat ca thay doi de debug world state bat thuong.
+        """
         factions = list(self.db.permanent.faction_states.find({}))
+        tick_summary = []
+
         for faction in factions:
-            delta = random.randint(-2, 3)
+            faction_id = faction.get("faction_id", "unknown")
+            # FIX #8: Seeded RNG - deterministic theo (tick, faction_id)
+            seed = tick ^ (hash(faction_id) & 0xFFFFFFFF)
+            rng = random.Random(seed)
+            delta = rng.randint(-2, 3)
+
             self.db.permanent.faction_states.update_one(
-                {"faction_id": faction["faction_id"]},
+                {"faction_id": faction_id},
                 {"$inc": {"power": delta}},
             )
-        logger.info(f"[T0i] World tick {tick} hoan tat")
+            tick_summary.append(f"{faction_id}:{delta:+d}")
+
+        logger.info(
+            f"[T0i] World tick {tick} hoan tat "
+            f"({len(factions)} factions). "
+            f"Power deltas: {', '.join(tick_summary) if tick_summary else 'none'}"
+        )
 
     def generate_context_slice_v2(self) -> ContextSliceV2:
         """Soan Context Slice V2 cho A1 (Ban 2)."""
