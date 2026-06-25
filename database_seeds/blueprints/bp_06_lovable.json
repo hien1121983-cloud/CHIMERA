@@ -1,72 +1,30 @@
 {
-  "entity_id": "{GENERATED_BY_PYTHON_RNG}",
-  "full_name": "{GENERATED_BY_PYTHON_RNG}",
-  "blueprint_origin": "bp_06_lovable",
-  "core_data": {
-    "_blueprint_philosophy": "Con người bị điều khiển bởi phần vô thức và bóng tối của chính mình (Shadow Self). Mâu thuẫn bùng nổ khi cái tôi lý tưởng sụp đổ trước những ham muốn bị đè nén, nợ nghiệp quả và vết thương gia tộc.",
-    
-    "1_demographics_bloodline": {
-      "bloodline": {
-        "ancestry_notes": "String (Nghiệp dòng họ, lời nguyền hoặc vinh quang gia tộc)[span_3](start_span)[span_3](end_span)"
+    "blueprint_id": "bp_06_lovable",
+    "archetype_name": "Kẻ Kiểm Soát Bọc Đường (The Toxic Caregiver)",
+    "elevenlabs_voice_desc": "Giọng nữ/nam trầm ấm, ngọt ngào quá mức, luôn nói chậm rãi dỗ dành như đang nói chuyện với trẻ con.",
+    "inner_conflict_pool": [
+      "Cho rằng yêu thương là phải nhốt người mình yêu vào một cái lồng vàng.",
+      "Sẵn sàng chặt đứt đôi cánh của nạn nhân để họ mãi mãi phụ thuộc vào mình.",
+      "Bị ám ảnh bởi sự sạch sẽ và trật tự tuyệt đối trong các mối quan hệ.",
+      "Sử dụng sự chăm sóc và đồ ăn như một công cụ để thao túng và gây áp lực.",
+      "Đóng vai người hy sinh tất cả để gieo rắc sự áy náy cho người khác.",
+      "Nổi điên ngầm nếu nạn nhân dám từ chối sự giúp đỡ của mình.",
+      "Gây ra tai nạn rồi chính mình đóng vai người cứu rỗi để lấy lòng biết ơn.",
+      "Sợ hãi tột độ việc bị bỏ rơi, dẫn đến hành vi kiểm soát cực đoan.",
+      "Biến ngôi nhà thành một pháo đài nội bất xuất ngoại bất nhập.",
+      "Tẩy não nạn nhân rằng thế giới bên ngoài rất nguy hiểm, chỉ có mình là an toàn."
+    ],
+    "core_data": {
+      "_blueprint_philosophy": "Họ sẽ không bao giờ rời bỏ tôi, vì tôi đã làm cho họ không thể tự sống sót được nữa.",
+      "1_base_stats_matrix_1_100": {
+        "physical_and_survival": { "health": 80, "stamina": 75, "stealth": 90, "combat": 20, "pain_tolerance": 50 },
+        "social_and_power": { "charisma": 90, "manipulation": 100, "status": 60, "intimidation": 80, "networking": 75 },
+        "moral_and_flaws": { "empathy": 80, "greed": 40, "betrayal_tendency": 30, "narcissism": 85, "guilt_capacity": 10 }
       },
-      "genetic_profile": {
-        "rare_markers": "Array[String] (Đặc điểm gen hiếm, ví dụ: miễn dịch, dị nhân)[span_4](start_span)[span_4](end_span)",
-        "genetic_predispositions": "Array[Enum: addiction, aggression, depression, longevity] (Xu hướng bẩm sinh)[span_5](start_span)[span_5](end_span)"
-      },
-      "aging_traces": "Object {wrinkles_level, gray_hair_ratio, posture_decay} (Dấu thời gian in hằn trên cơ thể)[span_6](start_span)[span_6](end_span)"
-    },
-
-    "2_behavioral_and_typology": {
-      "mbti": "Enum (16 types - Khung tư duy phổ biến)[span_7](start_span)[span_7](end_span)",
-      "enneagram": "Enum (1-9 + wing - Động cơ cốt lõi)[span_8](start_span)[span_8](end_span)",
-      "moral_alignment": "Enum [lawful_good ... chaotic_evil][span_9](start_span)[span_9](end_span)",
-      "body_language_defaults": "Object {posture, eye_contact_level, gesture_frequency}[span_10](start_span)[span_10](end_span)",
-      "consumption_preferences": "Object {brands, aesthetic, music_genres, media_diet} (Chỉ dấu giai cấp/bộ lạc)[span_11](start_span)[span_11](end_span)"
-    },
-
-    "3_psychological_core_and_shadow": {
-      "ghost": "String (Sự kiện ám ảnh trước khi câu chuyện bắt đầu)[span_12](start_span)[span_12](end_span)",
-      "existential_fear": "Enum [abandonment, insignificance, annihilation, engulfment, loss_of_control, shame] (Sợ hãi nền tảng)[span_13](start_span)[span_13](end_span)",
-      "shame_core": "String (Điều nhân vật xấu hổ nhất về bản thân)[span_14](start_span)[span_14](end_span)",
-      "shadow_self": {
-        "traits": "Array[String] (Jungian shadow - Phần tăm tối bị đè nén)[span_15](start_span)[span_15](end_span)",
-        "frequency_of_emergence": "String (Tần suất phần con tối ám trỗi dậy)[span_16](start_span)[span_16](end_span)"
-      },
-      "ego_defense_mechanisms": "Array[Enum: denial, projection, rationalization, sublimation, displacement, reaction_formation][span_17](start_span)[span_17](end_span)",
-      "identity_anchors": "Array[String] (Thứ định nghĩa 'tôi là ai', mất đi sẽ sụp đổ)[span_18](start_span)[span_18](end_span)",
-      "desires_suppressed": "Array[String] (Ham muốn bị đè nén dẫn đến nổi loạn)[span_19](start_span)[span_19](end_span)"
-    },
-
-    "4_social_network_and_debts": {
-      "relationships": "Array[{target_id: String, type: Enum, power_dynamic: Enum [dominant, equal, submissive], shared_secrets: Array[String], unresolved_debt: Object}] (Mối liên kết bóng tối và nợ nần ân oán)[span_20](start_span)[span_20](end_span)",
-      "factions": "Array[{name: String, loyalty: Integer 1-100, dues_paid: Boolean}] (Hội nhóm lợi ích)[span_21](start_span)[span_21](end_span)",
-      "dependents": "Array[String] (Gánh nặng đạo đức)[span_22](start_span)[span_22](end_span)"
-    },
-
-    "5_vulnerabilities_and_kill_switches": {
-      "psychological_kill_switch": "Object {trigger, predicted_response} (Tử huyệt tâm lý, chạm vào là nổ)[span_23](start_span)[span_23](end_span)",
-      "compromise_history": "Array[{principle: String, broken_for: String, date: String}] (Tiền sử thỏa hiệp đạo đức)[span_24](start_span)[span_24](end_span)",
-      "manipulation_vectors": "Array[Enum: flattery, guilt, fear, loyalty, sex, money, family, legacy, truth] (Cách bị điều khiển hiệu quả nhất)[span_25](start_span)[span_25](end_span)",
-      "self_destruct_pattern": "String (Mô-típ tự hủy lặp lại)[span_26](start_span)[span_26](end_span)"
-    },
-
-    "6_temporal_lifecycle": {
-      "recurring_cycles": "Array[{pattern: String, periodicity: String}] (Vòng lặp hành vi độc hại)[span_27](start_span)[span_27](end_span)",
-      "unfinished_business": "Array[String] (Việc chưa làm xong, động cơ hành động đến chết)[span_28](start_span)[span_28](end_span)",
-      "legacy_intent": "String (Di sản muốn để lại thế gian)[span_29](start_span)[span_29](end_span)"
-    },
-
-    "7_metaphysical_subconscious": {
-      "_description": "Tầng nền sâu nhất, chi phối mọi hành động phi lý trí",
-      "archetype": "Enum [hero, caregiver, outlaw, sage, lover, jester, ruler, creator, innocent, explorer, magician, orphan] (Cổ mẫu tâm lý)[span_30](start_span)[span_30](end_span)",
-      "karma_ledger": {
-        "deeds_good": "Array[String]",
-        "deeds_evil": "Array[String]",
-        "perceived_debt": "String (Nợ nghiệp tự cảm thấy)[span_31](start_span)[span_31](end_span)"
-      },
-      "subconscious_symbols": "Array[{symbol: String, emotional_charge: String}] (Biểu tượng kích hoạt vô thức)[span_32](start_span)[span_32](end_span)",
-      "recurring_dreams": "Array[{imagery: String, interpretation: String}][span_33](start_span)[span_33](end_span)"
+      "2_biometrics_and_health": { "blood_type": "A", "hidden_disease": "Mắc hội chứng Munchausen by proxy (Tạo bệnh cho người khác để chăm sóc)." },
+      "3_economy_and_skills": { "income_source": "Bảo hiểm nhân thọ từ các đời chồng/vợ trước, nghề y tá/bác sĩ.", "hidden_debt": "Không.", "core_skill": "Bỏ độc vi lượng và thao túng tâm lý." },
+      "4_social_network": { "class": "Trung lưu mẫu mực", "allies": "Hàng xóm, hội phụ huynh", "hidden_enemies": "Người nhà của các nạn nhân cũ." },
+      "5_micro_habits": { "lie_tell": "Chớp mắt rất chậm và chải tóc cho đối phương khi đang dối trá.", "stress_tick": "Lau dọn một bề mặt đã sạch bóng liên tục." },
+      "6_blindspots_and_risks": { "fatal_flaw": "Yêu mù quáng, có thể chết cùng nạn nhân nếu không thể giữ được họ.", "blackmail_secret": "Đã từng đầu độc con ruột để giữ nó ở nhà." }
     }
-  }
 }
-
