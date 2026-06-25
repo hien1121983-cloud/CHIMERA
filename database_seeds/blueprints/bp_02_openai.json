@@ -1,61 +1,30 @@
 {
-  "entity_id": "{GENERATED_BY_PYTHON_RNG}",
-  "full_name": "{GENERATED_BY_PYTHON_RNG}",
-  "blueprint_origin": "bp_02_openai",
-  "core_data": {
-    "_blueprint_philosophy": "Nhìn nhân vật dưới lăng kính hệ sinh thái giả lập: Quyền lực xã hội, Tầng giấu kín (Blackmail), và các tham số Định mệnh (Fate Engine) quyết định tỷ lệ sống sót và phản bội.",
-    
-    "genetics_and_lifespan": {
-      "lifespan_expectancy": "Integer (Tuổi thọ tối đa được lập trình)",
-      "aging_rate": "Integer 0-100 (Tốc độ lão hóa, ảnh hưởng đến áp lực thời gian)",
-      "mutation_factor": "Integer 0-100 (Tỷ lệ đột biến sinh học/gen hiếm)"
-    },
-
-    "power_and_influence": {
-      "authority_level": "Integer 0-100 (Quyền lực chính thức)",
-      "political_power": "Integer 0-100",
-      "underground_power": "Integer 0-100 (Thế lực ngầm)",
-      "intimidation_power": "Integer 0-100 (Khả năng đe dọa, ép buộc người khác)"
-    },
-
-    "hidden_layer": {
-      "_description": "Tầng bí mật - Điểm nổ của mọi drama tống tiền",
-      "hidden_identity": "String (Thân phận thật bị giấu kín)",
-      "illegal_activities": "Array[String] (Hoạt động phi pháp đang thực hiện)",
-      "dark_desires": "Array[String] (Dục vọng đen tối)",
-      "blackmail_material": "Array[String] (Tài liệu tống tiền kẻ khác đang nắm giữ)"
-    },
-
-    "vulnerabilities_and_breaking_point": {
-      "fatal_flaw": "String (Tử huyệt chí mạng)",
-      "manipulation_susceptibility": "Integer 0-100 (Độ dễ bị thao túng)",
-      "corruption_risk": "Integer 0-100 (Nguy cơ bị tha hóa bởi tiền/quyền)",
-      "breaking_point": "String (Giới hạn chịu đựng trước khi sụp đổ và làm liều)"
-    },
-
-    "destiny_and_timeline": {
-      "ultimate_dream": "String (Mục tiêu tối thượng của cả cuộc đời)",
-      "turning_points": "Array[String] (Các bước ngoặt đã trải qua)",
-      "death_profile": {
-        "death_probability": "Integer 0-100 (Tỷ lệ có thể chết trong tập hiện tại)",
-        "death_causes": "Array[String] (Các nguyên nhân cái chết được dự báo)",
-        "legacy_left": "String (Di sản hoặc món nợ để lại sau khi chết)"
-      }
-    },
-
-    "META_HUMAN_ENGINE": {
-      "_description": "Tầng siêu dữ liệu dành riêng cho World Simulator để tính toán cốt truyện",
-      "fate_engine": {
-        "probability_of_betrayal": "Integer 0-100 (Tỷ lệ đâm sau lưng đồng minh)",
-        "probability_of_corruption": "Integer 0-100 (Tỷ lệ hắc hóa thành phản diện)",
-        "probability_of_tragic_end": "Integer 0-100 (Tỷ lệ nhận kết cục bi thảm)"
+    "blueprint_id": "bp_02_openai",
+    "archetype_name": "Kẻ Cơ Hội Máu Lạnh (The Calculating Opportunist)",
+    "elevenlabs_voice_desc": "Giọng nam, lạnh lẽo, đều đều, phát âm gãy gọn, không có bất kỳ dao động cảm xúc nào khi nói.",
+    "inner_conflict_pool": [
+      "Xem mọi mối quan hệ của con người chỉ là những bản hợp đồng có thời hạn.",
+      "Nỗi sợ duy nhất là sự vô dụng; nếu không tạo ra giá trị, thà chết còn hơn.",
+      "Bị ám ảnh bởi sự hoàn hảo của số liệu và kết quả kinh doanh.",
+      "Sẵn sàng bán đứng người bạn thân nhất nếu cái giá được trả đủ cao.",
+      "Mất khả năng cảm nhận tình yêu, coi đó là một khiếm khuyết sinh học.",
+      "Sưu tầm những điểm yếu của cấp trên để chuẩn bị cho cuộc lật đổ.",
+      "Tự cho mình là giống loài tiến hóa cao hơn những kẻ bị cảm xúc chi phối.",
+      "Luôn tính toán trước 5 bước cho mọi cuộc hội thoại.",
+      "Mắc chứng hoang tưởng rằng có người thông minh hơn đang thao túng mình.",
+      "Không bao giờ để lộ sự tức giận; trả thù qua các giao dịch tài chính."
+    ],
+    "core_data": {
+      "_blueprint_philosophy": "Cảm xúc là biến số gây nhiễu. Lợi ích là chân lý duy nhất.",
+      "1_base_stats_matrix_1_100": {
+        "physical_and_survival": { "health": 70, "stamina": 80, "stealth": 60, "combat": 50, "pain_tolerance": 85 },
+        "social_and_power": { "charisma": 60, "manipulation": 85, "status": 90, "intimidation": 75, "networking": 80 },
+        "moral_and_flaws": { "empathy": 0, "greed": 100, "betrayal_tendency": 100, "narcissism": 70, "guilt_capacity": 0 }
       },
-      "narrative_engine": {
-        "protagonist_score": "Integer 0-100 (Điểm phù hợp làm nhân vật chính)",
-        "antagonist_score": "Integer 0-100 (Điểm phù hợp làm phản diện)",
-        "unpredictability_score": "Integer 0-100 (Độ khó đoán trong hành động)"
-      }
+      "2_biometrics_and_health": { "blood_type": "O", "hidden_disease": "Không có cảm giác đau đớn về thể xác (CIPA dạng nhẹ)." },
+      "3_economy_and_skills": { "income_source": "Thương vụ sáp nhập, buôn bán thông tin nội gián.", "hidden_debt": "Không có nợ, chỉ có những kẻ nợ mình.", "core_skill": "Đọc vị tài chính và tống tiền." },
+      "4_social_network": { "class": "Tinh anh tài chính", "allies": "Luật sư, môi giới", "hidden_enemies": "Hàng trăm nhân viên bị sa thải vì tái cấu trúc." },
+      "5_micro_habits": { "lie_tell": "Không chớp mắt khi nói những lời tàn nhẫn nhất.", "stress_tick": "Gõ nhịp ngón tay theo chuỗi Fibonacci lên mặt bàn." },
+      "6_blindspots_and_risks": { "fatal_flaw": "Bỏ qua các yếu tố phi logic của con người (tình yêu, sự hy sinh).", "blackmail_secret": "Đã từng ngụy tạo giấy tờ dẫn đến cái chết của một cổ đông." }
     }
-  }
 }
-
