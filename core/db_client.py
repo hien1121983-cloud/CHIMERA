@@ -3,6 +3,7 @@ import os
 import json
 import sqlite3
 import logging
+import threading
 from typing import Optional
 
 from pymongo import MongoClient
@@ -14,11 +15,19 @@ class ChimeraDB:
     """Singleton quan ly 3 cum MongoDB + SQLite fallback."""
 
     _instance: Optional["ChimeraDB"] = None
+    # FIX #1: Lock cap class de dam bao double-checked locking thread-safe.
+    # Truoc day khong co lock -> 2 thread dong thoi vao __new__ co the
+    # tao 2 MongoClient rieng khi _instance chua duoc set.
+    _class_lock = threading.Lock()
 
     def __new__(cls):
+        # Fast path (khong can lock neu da co instance)
         if cls._instance is None:
-            cls._instance = super().__new__(cls)
-            cls._instance._initialized = False
+            with cls._class_lock:
+                # Re-check ben trong lock (double-checked locking pattern)
+                if cls._instance is None:
+                    cls._instance = super().__new__(cls)
+                    cls._instance._initialized = False
         return cls._instance
 
     def __init__(self):
@@ -30,6 +39,9 @@ class ChimeraDB:
         self.canon = MongoClient(os.getenv("MONGODB_URI_CANON"))["chimera_canon"]
 
         self.sqlite_cache = self._init_sqlite()
+        # FIX #5: Lock de serialize cac SQLite write tu nhieu thread.
+        # check_same_thread=False chi tat canh bao, khong tu dong serialize.
+        self._sqlite_lock = threading.Lock()
         self._create_indexes()
         self._initialized = True
 
@@ -38,6 +50,11 @@ class ChimeraDB:
         cache_path = os.getenv("LOCAL_CACHE_PATH", "./cache/local_cache.sqlite")
         os.makedirs(os.path.dirname(cache_path), exist_ok=True)
         conn = sqlite3.connect(cache_path, check_same_thread=False)
+
+        # FIX #5: WAL mode cho phep concurrent reads trong khi write dang dien ra.
+        # synchronous=NORMAL giam fsync (an toan cho cache, khong phai primary store).
+        conn.execute("PRAGMA journal_mode=WAL")
+        conn.execute("PRAGMA synchronous=NORMAL")
 
         tables = [
             "character_blueprints", "world_rules", "secret_items",
@@ -86,23 +103,30 @@ class ChimeraDB:
             return self._read_from_sqlite(collection_name)
 
     def _cache_to_sqlite(self, collection_name: str, data: list):
-        """Ghi de cache SQLite."""
+        """Ghi de cache SQLite (thread-safe voi write lock)."""
         try:
-            self.sqlite_cache.execute(f"DELETE FROM {collection_name}")
-            for item in data:
-                self.sqlite_cache.execute(
-                    f"INSERT INTO {collection_name} (id, data) VALUES (?, ?)",
-                    (
-                        str(item.get("_id", item.get("id", ""))),
-                        json.dumps(item, ensure_ascii=False),
-                    ),
-                )
-            self.sqlite_cache.commit()
+            # FIX #5: Serialize tat ca write operations bang lock.
+            # Khong co lock, 2 thread dong thoi DELETE+INSERT vao cung 1 bang
+            # se gay "database is locked" hoac corruption.
+            with self._sqlite_lock:
+                self.sqlite_cache.execute(f"DELETE FROM {collection_name}")
+                for item in data:
+                    self.sqlite_cache.execute(
+                        f"INSERT INTO {collection_name} (id, data) VALUES (?, ?)",
+                        (
+                            str(item.get("_id", item.get("id", ""))),
+                            json.dumps(item, ensure_ascii=False),
+                        ),
+                    )
+                self.sqlite_cache.commit()
         except Exception as e:
             logger.error(f"[DB] Loi cache SQLite: {e}")
 
     def _read_from_sqlite(self, collection_name: str) -> list:
-        """Doc tu SQLite cache."""
+        """Doc tu SQLite cache.
+        
+        WAL mode cho phep doc song song voi write ma khong can lock.
+        """
         try:
             cursor = self.sqlite_cache.execute(f"SELECT data FROM {collection_name}")
             return [json.loads(row[0]) for row in cursor.fetchall()]
