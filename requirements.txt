@@ -1,0 +1,24 @@
+# === Ban 1: Foundation ===
+python-dotenv>=1.0.0
+pydantic>=2.5.0
+pydantic-settings>=2.1.0
+pymongo>=4.6.0
+aiohttp>=3.9.0
+google-cloud-storage>=2.14.0
+feedparser>=6.0.10
+requests>=2.31.0
+python-telegram-bot>=20.7
+
+# === Ban 2: Creative & Audit ===
+google-generativeai>=0.4.0
+sentence-transformers>=2.3.0
+numpy>=1.26.0
+fastapi>=0.109.0
+uvicorn>=0.27.0
+
+# === Ban 3: Media & Render ===
+groq>=0.4.0
+elevenlabs>=0.2.27
+edge-tts>=6.1.9
+pydub>=0.25.1
+psutil>=5.9.0
