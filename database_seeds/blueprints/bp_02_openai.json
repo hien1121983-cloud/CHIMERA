@@ -1,0 +1,61 @@
+{
+  "entity_id": "{GENERATED_BY_PYTHON_RNG}",
+  "full_name": "{GENERATED_BY_PYTHON_RNG}",
+  "blueprint_origin": "bp_02_openai",
+  "core_data": {
+    "_blueprint_philosophy": "Nhìn nhân vật dưới lăng kính hệ sinh thái giả lập: Quyền lực xã hội, Tầng giấu kín (Blackmail), và các tham số Định mệnh (Fate Engine) quyết định tỷ lệ sống sót và phản bội.",
+    
+    "genetics_and_lifespan": {
+      "lifespan_expectancy": "Integer (Tuổi thọ tối đa được lập trình)",
+      "aging_rate": "Integer 0-100 (Tốc độ lão hóa, ảnh hưởng đến áp lực thời gian)",
+      "mutation_factor": "Integer 0-100 (Tỷ lệ đột biến sinh học/gen hiếm)"
+    },
+
+    "power_and_influence": {
+      "authority_level": "Integer 0-100 (Quyền lực chính thức)",
+      "political_power": "Integer 0-100",
+      "underground_power": "Integer 0-100 (Thế lực ngầm)",
+      "intimidation_power": "Integer 0-100 (Khả năng đe dọa, ép buộc người khác)"
+    },
+
+    "hidden_layer": {
+      "_description": "Tầng bí mật - Điểm nổ của mọi drama tống tiền",
+      "hidden_identity": "String (Thân phận thật bị giấu kín)",
+      "illegal_activities": "Array[String] (Hoạt động phi pháp đang thực hiện)",
+      "dark_desires": "Array[String] (Dục vọng đen tối)",
+      "blackmail_material": "Array[String] (Tài liệu tống tiền kẻ khác đang nắm giữ)"
+    },
+
+    "vulnerabilities_and_breaking_point": {
+      "fatal_flaw": "String (Tử huyệt chí mạng)",
+      "manipulation_susceptibility": "Integer 0-100 (Độ dễ bị thao túng)",
+      "corruption_risk": "Integer 0-100 (Nguy cơ bị tha hóa bởi tiền/quyền)",
+      "breaking_point": "String (Giới hạn chịu đựng trước khi sụp đổ và làm liều)"
+    },
+
+    "destiny_and_timeline": {
+      "ultimate_dream": "String (Mục tiêu tối thượng của cả cuộc đời)",
+      "turning_points": "Array[String] (Các bước ngoặt đã trải qua)",
+      "death_profile": {
+        "death_probability": "Integer 0-100 (Tỷ lệ có thể chết trong tập hiện tại)",
+        "death_causes": "Array[String] (Các nguyên nhân cái chết được dự báo)",
+        "legacy_left": "String (Di sản hoặc món nợ để lại sau khi chết)"
+      }
+    },
+
+    "META_HUMAN_ENGINE": {
+      "_description": "Tầng siêu dữ liệu dành riêng cho World Simulator để tính toán cốt truyện",
+      "fate_engine": {
+        "probability_of_betrayal": "Integer 0-100 (Tỷ lệ đâm sau lưng đồng minh)",
+        "probability_of_corruption": "Integer 0-100 (Tỷ lệ hắc hóa thành phản diện)",
+        "probability_of_tragic_end": "Integer 0-100 (Tỷ lệ nhận kết cục bi thảm)"
+      },
+      "narrative_engine": {
+        "protagonist_score": "Integer 0-100 (Điểm phù hợp làm nhân vật chính)",
+        "antagonist_score": "Integer 0-100 (Điểm phù hợp làm phản diện)",
+        "unpredictability_score": "Integer 0-100 (Độ khó đoán trong hành động)"
+      }
+    }
+  }
+}
+

@@ -1,0 +1,77 @@
+{
+  "entity_id": "{GENERATED_BY_PYTHON_RNG}",
+  "full_name": "{GENERATED_BY_PYTHON_RNG}",
+  "blueprint_origin": "bp_04_gemini",
+  "core_data": {
+    "_blueprint_philosophy": "Nhân vật là sản phẩm của môi trường xã hội. Mâu thuẫn nảy sinh từ sự phân tầng giai cấp, sự bất đối xứng quyền lực trong các mối quan hệ, và những điểm mù nhận thức khiến họ tin tưởng nhầm người.",
+    
+    "1_demographics_and_physicality_matrix": {
+      "biological_metadata": {
+        "genetic_lineage": "Array[String] (Mâu thuẫn từ định kiến huyết thống, thù hận gia tộc kế thừa hoặc quyền lợi thừa kế bị tranh chấp)",
+        "biological_sex": "Enum [MALE, FEMALE, INTERSEX] (Rào cản định kiến giới tính hoặc kỳ vọng từ môi trường xã hội)",
+        "chronological_age": "Integer (Rào cản thế hệ, mâu thuẫn giữa tuổi tác vật lý và kỳ vọng năng lực)"
+      },
+      "physicality_and_health": {
+        "base_attractiveness": "Integer 1-100 (Quyết định đặc quyền xã hội - halo effect - hoặc sự kỳ thị, dẫn đến thao túng hoặc bị đánh giá thấp)",
+        "identifying_marks": "Array[String] (Nguy cơ bị vạch trần thân phận, phá vỡ vỏ bọc trong các tình huống lẩn trốn)",
+        "physical_disabilities": "Array[String] (Rào cản vật lý tạo ra sự bất đối xứng về sức mạnh với phe đối lập)",
+        "vitality_index": "Integer 1-100 (Xác định điểm cạn kiệt thể lực, buộc nhân vật phải thỏa hiệp để sinh tồn)"
+      }
+    },
+
+    "2_socio_economics_and_capability_matrix": {
+      "financial_portfolio": {
+        "liquid_assets_value": "Integer (Giới hạn nguồn lực giải quyết vấn đề bằng tiền; sự thiếu hụt kích hoạt các hành động cực đoan)",
+        "hidden_debts": "Array[{creditor: String, amount: Integer}] (Đòn bẩy tài chính bị kẻ thù nắm giữ, tước đoạt quyền tự quyết của nhân vật)",
+        "income_sources": "Array[Enum] (Rủi ro bị cắt đứt nguồn sống, buộc nhân vật phải thay đổi hệ giá trị để mưu sinh)"
+      },
+      "cognitive_metrics": {
+        "iq_score": "Integer 1-100 (Sự chênh lệch trí tuệ tạo ra mâu thuẫn do tư duy lệch pha với đám đông hoặc kiêu ngạo trí tuệ)",
+        "eq_score": "Integer 1-100 (Điểm mù trong việc thấu cảm, dẫn đến việc đẩy đồng minh thành kẻ thù, hoặc dễ bị thao túng tâm lý)"
+      },
+      "skill_tree": "Array[{skill_id: String, proficiency_level: Integer 1-100}] (Sự thiếu hụt kỹ năng sinh tồn thiết yếu trong môi trường mới tạo ra xung đột thực thi)"
+    },
+
+    "3_social_network_and_hierarchy_matrix": {
+      "societal_standing": {
+        "social_stratum": "Enum [ELITE, MIDDLE, UNDERCLASS, OUTCAST] (Xung đột giai cấp, đấu tranh để phá vỡ hoặc bảo vệ trật tự phân tầng)",
+        "soft_power_index": "Integer 1-100 (Giới hạn khả năng điều động nhân lực; mất quyền lực dẫn đến khủng hoảng bản dạng)"
+      },
+      "relational_graph": "Array[{target_entity_id: UUID, relationship_type: Enum [ALLY, NEMESIS, MENTOR, DEPENDENT], leverage_held_over_target: Integer 1-100}] (Sự bất đối xứng quyền lực thúc đẩy bạo chúa hoặc khởi nghĩa nội bộ)",
+      "faction_alignment": {
+        "primary_faction_id": "String (Xung đột giữa lòng trung thành với tổ chức và đạo đức cá nhân)",
+        "public_reputation": "String (Mâu thuẫn giữa con người thật - Identity - và kỳ vọng của đám đông - Persona)"
+      }
+    },
+
+    "4_behavioral_micro_traits": {
+      "ocean_personality_matrix": "Object (Định hình các quyết định sai lầm có tính hệ thống dưới áp lực cao)",
+      "involuntary_responses": {
+        "crisis_default_mode": "Enum [FIGHT, FLIGHT, FREEZE, FAWN] (Phản xạ chết người khi đối mặt với nguy hiểm, có thể phá hỏng kế hoạch nhóm)",
+        "deception_tells": "Array[String] (Tín hiệu vi mô khi nói dối, cho phép kẻ thù đọc vị và lật tẩy)"
+      },
+      "dependencies": "Array[{substance_or_behavior: String, addiction_severity: Integer 1-100}] (Tạo ra lỗ hổng để kẻ thù khai thác hoặc tống tiền; gây xao nhãng khỏi mục tiêu chính)"
+    },
+
+    "5_psychological_core": {
+      "core_traumas": "Array[String] (Vết thương gốc rễ bẻ cong lăng kính nhìn nhận thực tại, dẫn đến diễn dịch sai ý đồ của người khác)",
+      "the_internal_lie": "String (Niềm tin cốt lõi nhưng sai lệch về thế giới hoặc bản thân; buộc phải sụp đổ để nhân vật phát triển, tạo khủng hoảng hiện sinh)",
+      "motivational_vectors": {
+        "conscious_want": "String (Mục tiêu bề nổi thúc đẩy hành động, thường ích kỷ và tạo rạn nứt với môi trường)",
+        "unconscious_need": "String (Nhu cầu thực sự để chữa lành. Xung đột trực tiếp với conscious_want)"
+      },
+      "irrational_phobias": "Array[String] (Nỗi sợ vô lý vô hiệu hóa nhân vật tại những thời điểm đòi hỏi sự dũng cảm nhất)"
+    },
+
+    "6_vulnerabilities_and_fatal_flaws": {
+      "fatal_flaw": "Enum [HUBRIS, GREED, WRATH, NAIVETY, APATHY] (Điểm yếu chí mạng dẫn đến thảm kịch nếu không được khắc phục)",
+      "moral_compass": {
+        "absolute_boundaries": "Array[String] (Ranh giới không bao giờ vượt qua)",
+        "breaking_point_threshold": "Integer 1-100 (Mức độ áp lực cần thiết để buộc nhân vật phải phá vỡ ranh giới đạo đức của chính mình)"
+      },
+      "ruinous_secrets": "Array[String] (Bí mật có sức hủy diệt sinh mạng hoặc sự nghiệp; động lực để duy trì lời nói dối hoặc bị tống tiền)",
+      "cognitive_blind_spots": "Array[String] (Những cá nhân, tổ chức hoặc ý thức hệ mà nhân vật tin tưởng một cách mù quáng, mở đường cho sự phản bội bất ngờ)"
+    }
+  }
+}
+
