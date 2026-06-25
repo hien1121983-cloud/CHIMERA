@@ -1,6 +1,7 @@
 """Cac ham helper dung chung trong toan pipeline."""
 import os
 import logging
+import threading
 
 from core.db_client import ChimeraDB
 
@@ -36,19 +37,54 @@ async def send_telegram_alert(message: str):
 
 
 def send_telegram_alert_sync(message: str):
-    """Wrapper sync cho send_telegram_alert (dung trong sync context)."""
+    """Wrapper sync cho send_telegram_alert.
+
+    FIX #7: Phien ban cu dung asyncio.create_task() khi co event loop dang
+    chay, tao ra fire-and-forget task khong duoc await. Task co the bi mat
+    neu event loop dong truoc khi task chay xong (vi du: pipeline crash
+    ngay sau khi goi ham nay).
+
+    Phien ban moi:
+    - Khong co event loop (sync context, pho bien nhat): asyncio.run() truc tiep.
+    - Co event loop dang chay (trong async context): chay asyncio.run() trong
+      thread rieng voi join(timeout=10) de dam bao message duoc gui truoc khi
+      tiep tuc. Tranh deadlock vi asyncio.run() tao loop moi, khong chung
+      voi loop hien tai.
+    """
     import asyncio
 
     try:
-        loop = asyncio.get_event_loop()
-        if loop.is_running():
-            asyncio.create_task(send_telegram_alert(message))
-        else:
-            asyncio.run(send_telegram_alert(message))
+        # Kiem tra xem co event loop dang chay khong
+        asyncio.get_running_loop()
+        # Co loop dang chay -> chay trong thread rieng de tranh deadlock
+        _send_in_thread(message)
     except RuntimeError:
-        asyncio.run(send_telegram_alert(message))
-    except Exception as e:
-        logger.error(f"[Telegram Sync] Loi: {e}")
+        # Khong co loop dang chay -> chay truc tiep (pho bien trong sync context)
+        try:
+            asyncio.run(send_telegram_alert(message))
+        except Exception as e:
+            logger.error(f"[Telegram Sync] Loi: {e}")
+
+
+def _send_in_thread(message: str):
+    """Chay send_telegram_alert trong thread rieng, cho toi da 10 giay."""
+    import asyncio
+
+    result = {"error": None}
+
+    def _run():
+        try:
+            asyncio.run(send_telegram_alert(message))
+        except Exception as e:
+            result["error"] = e
+
+    t = threading.Thread(target=_run, daemon=True)
+    t.start()
+    t.join(timeout=10)
+    if t.is_alive():
+        logger.warning("[Telegram Sync] Timeout sau 10s, message co the chua duoc gui.")
+    elif result["error"]:
+        logger.error(f"[Telegram Sync] Loi tu thread: {result['error']}")
 
 
 def get_current_episode() -> int:
@@ -59,12 +95,31 @@ def get_current_episode() -> int:
 
 
 def _serialize_draft(draft: dict) -> str:
-    """Ghep toan bo action + dialogue cua draft thanh 1 text dai."""
+    """Ghep toan bo action + dialogue cua draft thanh 1 text dai.
+
+    FIX #9: Them fallback cho truong hop key cua scene khac voi schema A1
+    (vi du data cu trong MongoDB dung "description" thay vi "action").
+    Them synopsis vao dau de tang chat luong so sanh embedding.
+    """
     parts = []
+
+    # Them synopsis neu co
+    synopsis = draft.get("synopsis", "")
+    if synopsis:
+        parts.append(synopsis)
+
     for scene in draft.get("scenes", []):
-        parts.append(scene.get("action", ""))
+        # FIX #9: Ho tro ca "action" (schema hien tai) lan "description" (legacy)
+        action_text = scene.get("action") or scene.get("description") or ""
+        if action_text:
+            parts.append(action_text)
+
         for dlg in scene.get("dialogues", []):
-            parts.append(f"{dlg.get('character', '')}: {dlg.get('line', '')}")
+            character = dlg.get("character", "")
+            line = dlg.get("line", "")
+            if character and line:
+                parts.append(f"{character}: {line}")
+
     return "\n".join(parts)
 
 
@@ -73,7 +128,9 @@ def _generate_summary(script: dict) -> str:
     scenes = script.get("script", {}).get("scenes", [])
     summary_parts = [script.get("script", {}).get("synopsis", "")]
     for s in scenes[:5]:
-        summary_parts.append(s.get("action", ""))
+        action = s.get("action") or s.get("description") or ""
+        if action:
+            summary_parts.append(action)
     return " ".join(summary_parts)[:2000]
 
 
