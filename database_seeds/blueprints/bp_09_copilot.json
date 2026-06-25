@@ -1,87 +1,30 @@
 {
-  "entity_id": "{GENERATED_BY_PYTHON_RNG}",
-  "full_name": "{GENERATED_BY_PYTHON_RNG}",
-  "blueprint_origin": "bp_09_copilot",
-  "core_data": {
-    "_blueprint_philosophy": "Sự thật là một ảo ảnh. Mâu thuẫn bùng nổ khi ký ức của nhân vật bị bóp méo, họ tự lừa dối bản thân bằng các thiên kiến xác nhận, và cơ thể (nhịp tim, sự kiệt sức) phản bội lại chính lời nói dối của họ.",
-    
-    "0_metadata_and_mutable_state": {
-      "vital_signs": {
-        "heart_rate": "Integer (Nhịp tim tăng cao tố cáo sự hoảng loạn khi đang đàm phán)[span_4](start_span)[span_4](end_span)",
-        "cortisol_level": "Integer 0-100 (Chỉ số stress)[span_5](start_span)[span_5](end_span)",
-        "fatigue_index": "Integer 0-100 (Mức độ kiệt sức, suy giảm nhận thức khi vượt ngưỡng)[span_6](start_span)[span_6](end_span)"
-      }
-    },
-
-    "1_demographics_and_physicality": {
-      "genetic_profile": {
-        "bloodline": "String (Huyết thống; mâu thuẫn từ mối thù truyền kiếp hoặc quyền thừa kế)[span_7](start_span)[span_7](end_span)",
-        "physical_mutations": "Array[String] (Sự kỳ thị của xã hội, năng lực đặc biệt đi kèm cái giá phải trả)[span_8](start_span)[span_8](end_span)"
+    "blueprint_id": "bp_09_copilot",
+    "archetype_name": "Kẻ Bầy Tôi Phản Trắc (The Obedient Betrayer)",
+    "elevenlabs_voice_desc": "Giọng nam, phục tùng, nhẫn nhịn, luôn hạ tông giọng xuống khi nói chuyện với người khác.",
+    "inner_conflict_pool": [
+      "Bề ngoài luôn cúi đầu phục tùng nhưng bên trong sục sôi ngọn lửa ghen tị.",
+      "Âm thầm phá hoại thành công của chủ nhân bằng những chi tiết nhỏ nhất.",
+      "Góp nhặt từng sự uất ức nhỏ nhoi để nung nấu thành kế hoạch trả thù lớn.",
+      "Tỏ ra vô hại và kém cỏi để không ai đề phòng.",
+      "Biết mọi bí mật bẩn thỉu nhất của kẻ bề trên nhưng luôn giữ im lặng.",
+      "Cảm thấy thỏa mãn tột độ khi thấy người khác thất bại vì lời khuyên 'có vẻ tốt' của mình.",
+      "Bị mắc kẹt trong thân phận thấp hèn nhưng có tham vọng của một vị vua.",
+      "Đánh cắp dần dần danh tính, đồ vật và thói quen của người mà hắn ghen tị.",
+      "Sẵn sàng chịu đòn roi không kêu ca chỉ để chờ cơ hội đâm lén sau lưng.",
+      "Đóng vai người tốt bụng, luôn an ủi nạn nhân do chính mình hãm hại."
+    ],
+    "core_data": {
+      "_blueprint_philosophy": "Cứ để bọn họ đứng trên đỉnh vinh quang. Rễ cây mục nát từ dưới lòng đất.",
+      "1_base_stats_matrix_1_100": {
+        "physical_and_survival": { "health": 60, "stamina": 90, "stealth": 90, "combat": 40, "pain_tolerance": 100 },
+        "social_and_power": { "charisma": 30, "manipulation": 95, "status": 20, "intimidation": 10, "networking": 40 },
+        "moral_and_flaws": { "empathy": 20, "greed": 85, "betrayal_tendency": 100, "narcissism": 80, "guilt_capacity": 10 }
       },
-      "somatic_markers": {
-        "chronological_age": "Integer (Mâu thuẫn giữa ngoại hình và kinh nghiệm)[span_9](start_span)[span_9](end_span)",
-        "distinguishing_features": "Array[String] (Sẹo, hình xăm; bị nhận diện bởi kẻ thù)[span_10](start_span)[span_10](end_span)"
-      },
-      "pathology_status": {
-        "chronic_pain_level": "Integer 0-10 (Mất tập trung trong khoảnh khắc sinh tử, dễ bị đầu độc do phụ thuộc thuốc)[span_11](start_span)[span_11](end_span)",
-        "physical_disabilities": "Array[Enum] (Bất lợi trong môi trường cụ thể)[span_12](start_span)[span_12](end_span)"
-      }
-    },
-
-    "2_socio_economics_and_capabilities": {
-      "financial_matrix": {
-        "visible_wealth": "Float (Tài sản nổi; mục tiêu của cướp bóc, tống tiền)[span_13](start_span)[span_13](end_span)",
-        "hidden_assets": "Float (Tài sản chìm; phao cứu sinh hoặc động cơ bị ám sát)[span_14](start_span)[span_14](end_span)",
-        "liabilities_debt": "Object {amount, creditor_id, interest_rate} (Bị thao túng bởi chủ nợ)[span_15](start_span)[span_15](end_span)"
-      },
-      "cognitive_metrics": {
-        "aq_raw": "Integer 0-100 (Adversity Quotient - Chỉ số vượt khó; bỏ cuộc giữa chừng hoặc liều lĩnh điên rồ khi cùng đường)[span_16](start_span)[span_16](end_span)",
-        "skill_decay_rate": "Float (Tốc độ mai một kỹ năng; kỹ năng từng là niềm tự hào giờ lại thất bại ở thời khắc quyết định)[span_17](start_span)[span_17](end_span)"
-      },
-      "survival_kit": {
-        "safehouse_locations": "Array[Coordinates] (Nơi trú ẩn bí mật bị lộ hoặc bị giăng bẫy)[span_18](start_span)[span_18](end_span)"
-      }
-    },
-
-    "3_social_network_and_hierarchy": {
-      "relationship_graph": "Array[{target_entity_id: UUID, relation_type: Enum, loyalty_index: Integer 0-100, leverage_held: String}] (Điểm yếu của đối phương đang nắm giữ; bị ép phản bội phe mình)[span_19](start_span)[span_19](end_span)",
-      "shadow_network": {
-        "blackmail_material_owned": "Array[{target_id, secret_type}] (Tài liệu tống tiền; con dao hai lưỡi)[span_20](start_span)[span_20](end_span)"
-      }
-    },
-
-    "4_behavioral_micro_traits": {
-      "stress_response_protocol": {
-        "panic_actions": "Array[String] (Hành động vô thức khi hoảng loạn tột độ, làm lộ vị trí hoặc kích hoạt bẫy)[span_21](start_span)[span_21](end_span)"
-      },
-      "addiction_matrix": "Array[{substance_habit: String, dependency_level: Integer 0-100, withdrawal_symptoms: Array[String]}] (Lên cơn vật vã đúng lúc cần sự tỉnh táo)[span_22](start_span)[span_22](end_span)"
-    },
-
-    "5_psychological_core": {
-      "narrative_drive": {
-        "conscious_want": "String (Mục tiêu bề nổi; theo đuổi mù quáng phá hủy quan hệ)[span_23](start_span)[span_23](end_span)",
-        "subconscious_need": "String (Nhu cầu tiềm thức; mâu thuẫn cốt lõi WANT vs NEED)[span_24](start_span)[span_24](end_span)"
-      },
-      "delusions_complex": {
-        "god_complex": "Integer 0-100 (Ảo tưởng sức mạnh; coi thường đối thủ và bước vào bẫy)[span_25](start_span)[span_25](end_span)",
-        "victim_mentality": "Integer 0-100 (Tâm lý nạn nhân; chờ đợi sự giải cứu ảo tưởng)[span_26](start_span)[span_26](end_span)"
-      }
-    },
-
-    "6_vulnerabilities_and_fatal_flaws": {
-      "fatal_flaw": "Object {flaw_archetype: Enum [Hubris, Greed, Envy...], manifestation: String} (Thứ sẽ giết chết nhân vật ở Hồi 3)[span_27](start_span)[span_27](end_span)",
-      "moral_event_horizon": "Array[String] (Tình thế Trolley Problem buộc phải vượt qua ranh giới đạo đức)[span_28](start_span)[span_28](end_span)",
-      "dead_zones": "Array[String] (Chủ đề khiến nhân vật mất lý trí (blind rage), tấn công nhầm đồng minh)[span_29](start_span)[span_29](end_span)",
-      "dark_secrets": "Array[{secret_description: String, discovery_probability: Float 0.0-1.0, ruin_level: Enum}] (Ép thực hiện nhiệm vụ tự sát nếu bị lộ)[span_30](start_span)[span_30](end_span)"
-    },
-
-    "7_MEMORY_AND_PERCEPTION_ENGINE": {
-      "_description": "Động cơ cốt lõi tạo ra một Unreliable Narrator (Người kể chuyện không đáng tin)[span_31](start_span)[span_31](end_span)",
-      "memory_log": "Array[{event_id: UUID, emotional_valence: Integer -100 to 100, distortion_factor: Float 0.0-1.0}] (Quyết định sai lầm dựa trên một ký ức bị não bộ tự sửa đổi)[span_32](start_span)[span_32](end_span)",
-      "perception_filter": {
-        "confirmation_bias_targets": "Array[String] (Những điều nhân vật có xu hướng chỉ tin nếu khớp định kiến; bỏ qua manh mối quan trọng)[span_33](start_span)[span_33](end_span)"
-      }
+      "2_biometrics_and_health": { "blood_type": "A", "hidden_disease": "Luôn bị đau lưng do tư thế cúi luồn thường xuyên." },
+      "3_economy_and_skills": { "income_source": "Tiền lương trợ lý, biển thủ ngân quỹ nhỏ lẻ.", "hidden_debt": "Nợ gia đình một khoản lớn cản trở sự tự do.", "core_skill": "Đâm lén, ngụy tạo bằng chứng và luồn cúi." },
+      "4_social_network": { "class": "Giai cấp phục vụ/Trợ lý", "allies": "Những kẻ dưới đáy bất mãn", "hidden_enemies": "Những ông chủ cũ đã bị hắn lật đổ." },
+      "5_micro_habits": { "lie_tell": "Luôn hạ ánh mắt xuống nhìn vào giày của đối phương khi nói dối.", "stress_tick": "Nắm chặt bàn tay giấu sau lưng đến mức móng tay găm vào da." },
+      "6_blindspots_and_risks": { "fatal_flaw": "Mặc cảm tự ti quá lớn khiến hắn luôn sợ bị vạch trần là kẻ bất tài.", "blackmail_secret": "Chính hắn đã mở cửa cho sát thủ vào giết gia đình người chủ trước." }
     }
-  }
 }
-
