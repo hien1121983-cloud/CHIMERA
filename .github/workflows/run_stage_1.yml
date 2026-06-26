@@ -50,4 +50,3 @@ jobs:
             cache/*.json
             *.log
           retention-days: 7
-
