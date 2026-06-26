@@ -1,6 +1,23 @@
 {
-  "blood_violence": "supernatural_effect",
-  "sensitive_words": "substitution_map_v3",
-  "death_portrayal": "metaphorical",
-  "romance_limit": "PG-13"
+  "target_platform": "tiktok",
+  "technical_constraints": {
+    "max_duration_seconds": 180,
+    "pacing_style": "hyper_kinetic",
+    "hook_window_seconds": 3
+  },
+  "content_guidelines": {
+    "pg_rating": "PG-13",
+    "violence_rule": "Cấm miêu tả máu me trực tiếp. Chuyển hóa bạo lực thành đòn tấn công tâm lý hoặc sử dụng từ lóng (VD: 'đăng xuất', 'tiễn đi').",
+    "romance_rule": "Không có yếu tố 18+. Tập trung vào thao túng tâm lý (toxic traits), ghen tuông và phản bội.",
+    "banned_themes": [
+      "Tự sát trực tiếp",
+      "Chính trị nhạy cảm",
+      "Tôn giáo cực đoan",
+      "Phân biệt chủng tộc"
+    ]
+  },
+  "mandatory_structure": {
+    "scene_8": "Bắt buộc có Plot Twist / Glitch",
+    "scene_15": "Bắt buộc dừng đột ngột (Cliffhanger), không có hậu (No happy ending)"
+  }
 }
