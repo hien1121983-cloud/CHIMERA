@@ -1,0 +1,64 @@
+name: 🎭 CHẠY BẢN 2: Xưởng Kịch Bản & Kiểm Duyệt (Stage 2)
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  run-stage-2:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: 📥 Kéo mã nguồn
+        uses: actions/checkout@v4
+
+      - name: 🐍 Thiết lập Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: 'pip'
+
+      - name: 📦 Cài đặt thư viện AI & Xử lý
+        run: |
+          python -m pip install --upgrade pip
+          pip install pymongo pydantic pydantic-settings python-dotenv requests feedparser aiohttp python-telegram-bot google-generativeai groq
+
+      - name: 🚀 Khởi chạy Bản 2 (scripting_pipeline.py)
+        env:
+          # Truyền đầy đủ 3 cụm Database
+          MONGODB_URI_PERMANENT: ${{ secrets.MONGODB_URL_NO1 }}
+          MONGODB_URI_PURGATORY: ${{ secrets.MONGODB_URL_NO2 }}
+          MONGODB_URI_CANON: ${{ secrets.MONGODB_URL_NO3 }}
+          
+          # Truyền đầy đủ Pool API Keys (Đã map theo tên thực tế trong GitHub)
+          GEMINI_KEY_1: ${{ secrets.GEMINI_API_KEY1 }}
+          GEMINI_KEY_2: ${{ secrets.GEMINI_API_KEY2 }}
+          GEMINI_KEY_3: ${{ secrets.GEMINI_API_KEY3 }}
+          GEMINI_KEY_4: ${{ secrets.GEMINI_API_KEY4 }}
+          GEMINI_KEY_5: ${{ secrets.GEMINI_API_KEY5 }}
+          GEMINI_KEY_6: ${{ secrets.GEMINI_API_KEY6 }}
+          
+          GROQ_KEY_1: ${{ secrets.GROQ_API_KEY1 }}
+          GROQ_KEY_2: ${{ secrets.GROQ_API_KEY2 }}
+          GROQ_KEY_3: ${{ secrets.GROQ_API_KEY3 }}
+          GROQ_KEY_4: ${{ secrets.GROQ_API_KEY4 }}
+          GROQ_KEY_5: ${{ secrets.GROQ_API_KEY5 }}
+          GROQ_KEY_6: ${{ secrets.GROQ_API_KEY6 }}
+          
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          # Đảm bảo file payload từ Bản 1 đã sẵn sàng trong cache
+          echo "Bắt đầu xưởng kịch bản, sử dụng payload từ Bản 1..."
+          python scripting_pipeline.py
+
+      - name: 📋 Lưu Báo Cáo Kịch Bản (Master_Script)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: KET-QUA-BAN-2-Master-Script
+          path: |
+            cache/master_script_latest.json
+            logs/
+          retention-days: 7
+
