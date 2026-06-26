@@ -1,0 +1,38 @@
+{
+  "voice_pool": [
+    {
+      "archetype_match": "Kẻ Đạo Đức Giả Thao Túng",
+      "voice_id": "EXaV23k51y", 
+      "provider": "elevenlabs",
+      "description": "Nam trung, ấm áp, nhã nhặn nhưng giả tạo"
+    },
+    {
+      "archetype_match": "Kẻ Cơ Hội Máu Lạnh",
+      "voice_id": "pNInz6obbf",
+      "provider": "elevenlabs",
+      "description": "Nam, lạnh lẽo, đều đều vô cảm"
+    },
+    {
+      "archetype_match": "Kẻ Kiểm Soát Bọc Đường",
+      "voice_id": "ThT5KcBeYp",
+      "provider": "elevenlabs",
+      "description": "Nữ, trầm ấm, dỗ dành, ngọt ngào độc hại"
+    },
+    {
+      "archetype_match": "Kẻ Cuồng Tín Trật Tự",
+      "voice_id": "ZqHqOWc34M",
+      "provider": "elevenlabs",
+      "description": "Nam, uy quyền, gãy gọn, ra lệnh"
+    },
+    {
+      "archetype_match": "Nghệ Sĩ Điên Loạn",
+      "voice_id": "LcfcW1lBkq",
+      "provider": "elevenlabs",
+      "description": "Nữ, thanh thoát, nhịp điệu thất thường"
+    }
+  ],
+  "fallback_voice": {
+    "male": "TxGEqnHWrf",
+    "female": "MF3mGyEYCl"
+  }
+}
