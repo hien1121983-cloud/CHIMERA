@@ -25,8 +25,8 @@ jobs:
 
       - name: 🚀 Khởi chạy chiến dịch nạp dữ liệu (Seeder)
         env:
-          # Đã sửa lại tên secret khớp 100% với lỗi gõ máy (có chữ G) trong ảnh của bạn
-          MONGODB_URI_PERMANENT: ${{ secrets.MONGODGB_URI_PERMANENT }}
+          # Lấy Secret MONGODB_URL_NO1 của GitHub và gán vào biến môi trường MONGODB_URI_PERMANENT cho Python
+          MONGODB_URI_PERMANENT: ${{ secrets.MONGODB_URL_NO1 }}
         run: |
           echo "Bắt đầu chạy file database_seeder.py..."
           python database_seeder.py
@@ -38,3 +38,4 @@ jobs:
           name: Báo-Cáo-Nạp-Dữ-Liệu-DB
           path: seeding_report.log
           retention-days: 7
+          
