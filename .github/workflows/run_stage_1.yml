@@ -1,0 +1,53 @@
+name: ⚙️ CHẠY BẢN 1: Thu thập & Mô phỏng (Stage 1)
+
+on:
+  workflow_dispatch: # Kích hoạt bằng nút bấm thủ công
+
+jobs:
+  run-stage-1:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: 📥 Kéo mã nguồn về máy ảo
+        uses: actions/checkout@v4
+
+      - name: 🐍 Thiết lập môi trường Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: 'pip'
+
+      - name: 📦 Cài đặt thư viện (Dependencies)
+        run: |
+          python -m pip install --upgrade pip
+          # Giả định cài đặt các thư viện thiết yếu cho Bản 1
+          # (Nếu bạn có file requirements.txt, hãy thay bằng: pip install -r requirements.txt)
+          pip install pymongo pydantic python-dotenv requests feedparser
+
+      - name: 🚀 Khởi chạy Bản 1 (main_pipeline.py)
+        env:
+          # Cấp quyền truy cập cho cả 3 Cụm Não 
+          # (Bản 1 cần đọc từ NO1 và ghi dữ liệu trạng thái vào NO2)
+          MONGODB_URI_PERMANENT: ${{ secrets.MONGODB_URL_NO1 }}
+          MONGODB_URI_PURGATORY: ${{ secrets.MONGODB_URL_NO2 }}
+          MONGODB_URI_CANON:     ${{ secrets.MONGODB_URL_NO3 }}
+          
+          # Cấp quyền Telegram để hệ thống báo lỗi nếu có Trạm nào bị sập
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          echo "Đang kích hoạt quy trình thu thập T0 -> T0h và Engine T0i..."
+          python main_pipeline.py
+
+      - name: 📋 Trích xuất Kết quả (Nghiệm thu Master_Payload)
+        if: always() # Luôn chạy để lấy file JSON dù script có lỗi hay không
+        uses: actions/upload-artifact@v4
+        with:
+          name: KET-QUA-BAN-1-Master-Payload
+          path: |
+            cache/master_payload_latest.json
+            cache/*.json
+            *.log
+          retention-days: 7
+
