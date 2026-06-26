@@ -1,0 +1,13 @@
+{
+  "blueprint_id": "bp_supp_04",
+  "name": "Cô Bán Trà Đá",
+  "role": "supporting",
+  "archetype": "observer",
+  "description": "Trạm thu phát sóng thông tin vỉa hè, người chứng kiến mọi biến cố nhưng luôn tỏ ra vô can.",
+  "inner_conflict_pool": [
+    "Muốn yên ổn buôn bán nhưng cứ hay bị cuốn vào drama",
+    "Biết quá nhiều bí mật của khách hàng nhưng không dám nói"
+  ],
+  "used": false
+}
+
