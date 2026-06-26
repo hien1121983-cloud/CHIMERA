@@ -1,0 +1,53 @@
+{
+  "multiverses": [
+    {
+      "world_id": "vn_modern_2026",
+      "world_name": "Đô thị Hiện đại Việt Nam 2026",
+      "description": "Thế giới thực tại, xoay quanh cơm áo gạo tiền, lừa đảo mạng, nợ nần và drama đời thường.",
+      "hubs": [
+        "Sàn giao dịch Bất động sản xập xệ",
+        "Quán phở cơm nguội vỉa hè lúc 2h sáng",
+        "Văn phòng đa cấp thuê tại Landmark",
+        "Hầm gửi xe chung cư mini ngột ngạt",
+        "Phòng trọ 15m2 tường mốc"
+      ]
+    },
+    {
+      "world_id": "vn_xianxia_dark",
+      "world_name": "Tiên Hiệp Hắc Ám",
+      "description": "Tu chân giới tàn khốc, mạnh được yếu thua, đoạt bảo sát nhân, tu tiên như kinh doanh đa cấp.",
+      "hubs": [
+        "Đấu Pháp Đài nhuốm máu",
+        "Chợ đen giao dịch Linh Thạch",
+        "Tàng Kinh Các bị thiêu rụi một nửa",
+        "Mật thất bế quan luyện đan",
+        "Vực thẳm trừng phạt phản đồ"
+      ]
+    },
+    {
+      "world_id": "vn_cyberpunk_2150",
+      "world_name": "Tương Lai Bán Cơ Thể 2150",
+      "description": "Thành phố rác công nghệ cao, con người bị bóc lột đến từng giọt oxy và dung lượng phổi.",
+      "hubs": [
+        "Hẻm neon Khu 13 ngập rác điện tử",
+        "Phòng cấy ghép nội tạng lậu",
+        "Quầy bar ảo giác dưới hầm ngầm",
+        "Văn phòng giám sát AI của tập đoàn",
+        "Trạm xe bay công cộng bốc khói"
+      ]
+    },
+    {
+      "world_id": "vn_historical_myth",
+      "world_name": "Cung Đình Thần Thoại",
+      "description": "Hoàng cung lộng lẫy nhưng thối nát, đầy rẫy mưu mô đoạt vị, độc dược và án oan.",
+      "hubs": [
+        "Thái Hòa Điện uy nghiêm nhưng lạnh lẽo",
+        "Lãnh cung đầy mạng nhện và tiếng khóc",
+        "Hình bộ đường với các dụng cụ tra tấn",
+        "Ngự thiện phòng lúc nửa đêm",
+        "Hồ sen bí mật sau ngự hoa viên"
+      ]
+    }
+  ]
+}
+
