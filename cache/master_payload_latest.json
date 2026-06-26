@@ -1,0 +1,795 @@
+{
+  "meta": {
+    "pipeline_version": "5.0.1",
+    "episode_number": 1,
+    "generated_at": "2026-06-26T14:20:30.418741Z",
+    "fallback_used": false
+  },
+  "archetypes": {
+    "archetype_name": "The Chrono-Fracture Paradox",
+    "probability_weight": 25,
+    "description": "A sci-fi thriller framework where localized time fractures, causing past, present, and future to overlap, forcing the protagonist to resolve a paradox before timeline collapses.",
+    "scenes": [
+      {
+        "scene_id": 1,
+        "function": "The Echo",
+        "rule": "Protagonist perceives a visual or auditory echo of an action seconds before execution. Emotion: Disorientation. Camera: Overlapping double exposure."
+      },
+      {
+        "scene_id": 2,
+        "function": "Rationalization",
+        "rule": "Protagonist attempts to reset perception, blaming acoustics or fatigue. Emotion: Denial. Camera: Medium shot, steady."
+      },
+      {
+        "scene_id": 3,
+        "function": "Pattern Recognition",
+        "rule": "Protagonist notices echoes follow a specific mathematical rhythm. Emotion: Curiosity turning to dread. Camera: Close-up tracking the pattern."
+      },
+      {
+        "scene_id": 4,
+        "function": "Testing the Rules",
+        "rule": "Protagonist performs unpredictable actions to test the echo. Emotion: Tension. Camera: Handheld following erratic movement."
+      },
+      {
+        "scene_id": 5,
+        "function": "The Tear",
+        "rule": "The unpredictable action causes a localized visual distortion, tearing spatial continuity. Emotion: Shock. Camera: VFX heavy, warped perspective."
+      },
+      {
+        "scene_id": 6,
+        "function": "The Warning",
+        "rule": "The distortion emits a low-frequency cue, signaling systemic collapse. Emotion: Urgency. Camera: Extreme close-up on vibrating details."
+      },
+      {
+        "scene_id": 7,
+        "function": "Multiplication",
+        "rule": "Multiple temporal tears appear simultaneously, overlapping time states. Emotion: Overwhelm. Camera: Rapid panning, chaotic editing."
+      },
+      {
+        "scene_id": 8,
+        "function": "THE GLITCH/TWIST",
+        "rule": "Protagonist realizes they are the original anomaly; their existence is causing the collapse. Emotion: Devastating realization. Camera: Snap zoom out showing subject glowing/distorting."
+      },
+      {
+        "scene_id": 9,
+        "function": "Guilt",
+        "rule": "Protagonist grapples with destroying reality via existence. Emotion: Guilt and horror. Camera: High angle isolating subject."
+      },
+      {
+        "scene_id": 10,
+        "function": "Isolation",
+        "rule": "Protagonist pushes others away to prevent infection. Emotion: Self-sacrifice. Camera: Wide shot emphasizing distance."
+      },
+      {
+        "scene_id": 11,
+        "function": "The Solution",
+        "rule": "Protagonist formulates a self-erasure plan to repair the timeline. Emotion: Resolve. Camera: Close-up, determined expression."
+      },
+      {
+        "scene_id": 12,
+        "function": "MUNDANE REFLECTION",
+        "rule": "A nostalgic moment focusing on a happy memory about to be erased. Emotion: Poignant loss. Camera: Soft lighting, slow motion."
+      },
+      {
+        "scene_id": 13,
+        "function": "Execution",
+        "rule": "Protagonist initiates self-erasure, dissolving into static. Emotion: Pain and acceptance. Camera: Macro shot of dissolution."
+      },
+      {
+        "scene_id": 14,
+        "function": "Timeline Resistance",
+        "rule": "Timeline fights to preserve the paradox, pulling the protagonist's form back together. Emotion: Agonizing struggle. Camera: Whip pans, strobe lighting."
+      },
+      {
+        "scene_id": 15,
+        "function": "CLIFFHANGER",
+        "rule": "Erasure completes, but a single impossible artifact of the protagonist remains, proving paradox survival. Emotion: Unresolved mystery. Camera: Focus pull to artifact."
+      }
+    ],
+    "arc_id": "arc_21"
+  },
+  "protagonists": [
+    {
+      "blueprint_id": "bp_02_openai",
+      "archetype_name": "Kẻ Cơ Hội Máu Lạnh (The Calculating Opportunist)",
+      "elevenlabs_voice_desc": "Giọng nam, lạnh lẽo, đều đều, phát âm gãy gọn, không có bất kỳ dao động cảm xúc nào khi nói.",
+      "inner_conflict_pool": [
+        "Xem mọi mối quan hệ của con người chỉ là những bản hợp đồng có thời hạn.",
+        "Nỗi sợ duy nhất là sự vô dụng; nếu không tạo ra giá trị, thà chết còn hơn.",
+        "Bị ám ảnh bởi sự hoàn hảo của số liệu và kết quả kinh doanh.",
+        "Sẵn sàng bán đứng người bạn thân nhất nếu cái giá được trả đủ cao.",
+        "Mất khả năng cảm nhận tình yêu, coi đó là một khiếm khuyết sinh học.",
+        "Sưu tầm những điểm yếu của cấp trên để chuẩn bị cho cuộc lật đổ.",
+        "Tự cho mình là giống loài tiến hóa cao hơn những kẻ bị cảm xúc chi phối.",
+        "Luôn tính toán trước 5 bước cho mọi cuộc hội thoại.",
+        "Mắc chứng hoang tưởng rằng có người thông minh hơn đang thao túng mình.",
+        "Không bao giờ để lộ sự tức giận; trả thù qua các giao dịch tài chính."
+      ],
+      "core_data": {
+        "_blueprint_philosophy": "Cảm xúc là biến số gây nhiễu. Lợi ích là chân lý duy nhất.",
+        "1_base_stats_matrix_1_100": {
+          "physical_and_survival": {
+            "health": 70,
+            "stamina": 80,
+            "stealth": 60,
+            "combat": 50,
+            "pain_tolerance": 85
+          },
+          "social_and_power": {
+            "charisma": 60,
+            "manipulation": 85,
+            "status": 90,
+            "intimidation": 75,
+            "networking": 80
+          },
+          "moral_and_flaws": {
+            "empathy": 0,
+            "greed": 100,
+            "betrayal_tendency": 100,
+            "narcissism": 70,
+            "guilt_capacity": 0
+          }
+        },
+        "2_biometrics_and_health": {
+          "blood_type": "O",
+          "hidden_disease": "Không có cảm giác đau đớn về thể xác (CIPA dạng nhẹ)."
+        },
+        "3_economy_and_skills": {
+          "income_source": "Thương vụ sáp nhập, buôn bán thông tin nội gián.",
+          "hidden_debt": "Không có nợ, chỉ có những kẻ nợ mình.",
+          "core_skill": "Đọc vị tài chính và tống tiền."
+        },
+        "4_social_network": {
+          "class": "Tinh anh tài chính",
+          "allies": "Luật sư, môi giới",
+          "hidden_enemies": "Hàng trăm nhân viên bị sa thải vì tái cấu trúc."
+        },
+        "5_micro_habits": {
+          "lie_tell": "Không chớp mắt khi nói những lời tàn nhẫn nhất.",
+          "stress_tick": "Gõ nhịp ngón tay theo chuỗi Fibonacci lên mặt bàn."
+        },
+        "6_blindspots_and_risks": {
+          "fatal_flaw": "Bỏ qua các yếu tố phi logic của con người (tình yêu, sự hy sinh).",
+          "blackmail_secret": "Đã từng ngụy tạo giấy tờ dẫn đến cái chết của một cổ đông."
+        }
+      },
+      "inner_conflicts": [
+        "Nỗi sợ duy nhất là sự vô dụng; nếu không tạo ra giá trị, thà chết còn hơn.",
+        "Mắc chứng hoang tưởng rằng có người thông minh hơn đang thao túng mình.",
+        "Mất khả năng cảm nhận tình yêu, coi đó là một khiếm khuyết sinh học.",
+        "Luôn tính toán trước 5 bước cho mọi cuộc hội thoại.",
+        "Bị ám ảnh bởi sự hoàn hảo của số liệu và kết quả kinh doanh."
+      ]
+    },
+    {
+      "blueprint_id": "bp_04_gemini",
+      "archetype_name": "Nghệ Sĩ Điên Loạn (The Erratic Creator)",
+      "elevenlabs_voice_desc": "Giọng nữ/nam phi giới tính, thanh thoát nhưng nhịp điệu thất thường, lúc thì rỉ rả lúc lại ré lên đầy phấn khích.",
+      "inner_conflict_pool": [
+        "Cho rằng sự hỗn loạn mới là cái đẹp tối thượng, trật tự là sự thối nát.",
+        "Ghiền cảm giác kích thích tột độ, bất chấp tính mạng để tìm cảm hứng.",
+        "Cảm xúc thay đổi 180 độ chỉ trong 3 giây: từ khóc lóc sang cười điên dại.",
+        "Luôn phá hoại chính những thành quả hoàn hảo nhất do mình tạo ra.",
+        "Cần sự chú ý của đám đông như một loại ma túy.",
+        "Không có giới hạn đạo đức; mọi nỗi đau của người khác đều là chất liệu nghệ thuật.",
+        "Sợ hãi sự nhàm chán hơn cả cái chết.",
+        "Hay tự cắt vào da thịt để cảm nhận mình vẫn còn tồn tại.",
+        "Yêu những kẻ nguy hiểm vì họ mang lại nguồn cảm hứng hắc ám.",
+        "Xem thực tại chỉ là một vở kịch rẻ tiền và mình là diễn viên chính."
+      ],
+      "core_data": {
+        "_blueprint_philosophy": "Thế giới này quá buồn tẻ. Tôi sẽ đốt nó lên để xem màu ngọn lửa.",
+        "1_base_stats_matrix_1_100": {
+          "physical_and_survival": {
+            "health": 50,
+            "stamina": 40,
+            "stealth": 20,
+            "combat": 50,
+            "pain_tolerance": 80
+          },
+          "social_and_power": {
+            "charisma": 100,
+            "manipulation": 75,
+            "status": 60,
+            "intimidation": 85,
+            "networking": 70
+          },
+          "moral_and_flaws": {
+            "empathy": 50,
+            "greed": 10,
+            "betrayal_tendency": 60,
+            "narcissism": 100,
+            "guilt_capacity": 0
+          }
+        },
+        "2_biometrics_and_health": {
+          "blood_type": "A",
+          "hidden_disease": "Rối loạn lưỡng cực (Bipolar), nghiện chất kích thích."
+        },
+        "3_economy_and_skills": {
+          "income_source": "Bán các tác phẩm nghệ thuật quái dị, nhà tài trợ ẩn danh.",
+          "hidden_debt": "Nợ ân tình một trùm xã hội đen yêu nghệ thuật.",
+          "core_skill": "Thao túng đám đông và tạo ra các ảo giác quang học."
+        },
+        "4_social_network": {
+          "class": "Giới nghệ sĩ ngầm (Bohemian)",
+          "allies": "Những kẻ cuồng tín",
+          "hidden_enemies": "Các nhà phê bình và những người bảo thủ."
+        },
+        "5_micro_habits": {
+          "lie_tell": "Hát lẩm nhẩm một giai điệu không lời khi đang lừa gạt.",
+          "stress_tick": "Gãi tróc lớp sơn trên móng tay."
+        },
+        "6_blindspots_and_risks": {
+          "fatal_flaw": "Quá cảm tính, dễ dàng rơi vào bẫy nếu bị khiêu khích cái tôi.",
+          "blackmail_secret": "Từng dùng thi thể người thật để làm vật liệu điêu khắc."
+        }
+      },
+      "inner_conflicts": [
+        "Yêu những kẻ nguy hiểm vì họ mang lại nguồn cảm hứng hắc ám.",
+        "Luôn phá hoại chính những thành quả hoàn hảo nhất do mình tạo ra.",
+        "Ghiền cảm giác kích thích tột độ, bất chấp tính mạng để tìm cảm hứng.",
+        "Cho rằng sự hỗn loạn mới là cái đẹp tối thượng, trật tự là sự thối nát.",
+        "Không có giới hạn đạo đức; mọi nỗi đau của người khác đều là chất liệu nghệ thuật.",
+        "Cần sự chú ý của đám đông như một loại ma túy.",
+        "Sợ hãi sự nhàm chán hơn cả cái chết."
+      ]
+    },
+    {
+      "blueprint_id": "bp_supp_03",
+      "name": "Thám Tử Tư Rởm",
+      "role": "supporting",
+      "archetype": "ally",
+      "description": "Chuyên gia ăn bám, thỉnh thoảng cung cấp được manh mối hữu ích nhờ ăn may.",
+      "inner_conflict_pool": [
+        "Ảo tưởng bản thân là Sherlock Holmes",
+        "Luôn trong tình trạng rỗng túi và trốn nợ tiền trọ"
+      ],
+      "used": false,
+      "inner_conflicts": [
+        "Ảo tưởng bản thân là Sherlock Holmes",
+        "Luôn trong tình trạng rỗng túi và trốn nợ tiền trọ"
+      ]
+    },
+    {
+      "blueprint_id": "bp_01_claude",
+      "archetype_name": "Kẻ Đạo Đức Giả Thao Túng (The Moral Hypocrite)",
+      "elevenlabs_voice_desc": "Giọng nam trung, ấm áp, nhã nhặn, có vẻ cực kỳ đáng tin cậy nhưng pha lẫn sự trịch thượng ngầm.",
+      "inner_conflict_pool": [
+        "Luôn rao giảng về đạo đức nhưng lại có những sở thích bí mật dơ bẩn nhất.",
+        "Sợ hãi tột cùng việc bị công chúng phát hiện ra bản chất thật.",
+        "Tin rằng mình đang làm việc xấu để bảo vệ một 'lợi ích lớn lao hơn'.",
+        "Thích cứu rỗi những kẻ yếu thế chỉ để thỏa mãn cảm giác mình là Chúa tể.",
+        "Ám ảnh cưỡng chế với sự sạch sẽ thể xác để bù đắp cho tâm hồn mục nát.",
+        "Nghiện cảm giác được người khác mang ơn và quỵ lụy.",
+        "Ghen tị với những người thực sự ngây thơ và tốt bụng, muốn hủy hoại họ.",
+        "Sẵn sàng hủy hoại cả một sự nghiệp của người khác chỉ vì một câu xúc phạm nhỏ.",
+        "Luôn đóng vai nạn nhân khi bị dồn vào chân tường.",
+        "Có một cuốn sổ ghi chép lại mọi lỗi lầm của người khác để tống tiền khi cần."
+      ],
+      "core_data": {
+        "_blueprint_philosophy": "Tôi không làm điều ác, tôi chỉ đang dọn dẹp rác rưởi của xã hội theo cách của riêng mình.",
+        "1_base_stats_matrix_1_100": {
+          "physical_and_survival": {
+            "health": 60,
+            "stamina": 50,
+            "stealth": 85,
+            "combat": 30,
+            "pain_tolerance": 40
+          },
+          "social_and_power": {
+            "charisma": 95,
+            "manipulation": 100,
+            "status": 80,
+            "intimidation": 40,
+            "networking": 90
+          },
+          "moral_and_flaws": {
+            "empathy": 15,
+            "greed": 75,
+            "betrayal_tendency": 90,
+            "narcissism": 95,
+            "guilt_capacity": 5
+          }
+        },
+        "2_biometrics_and_health": {
+          "blood_type": "AB",
+          "hidden_disease": "Mất ngủ mãn tính, luôn phải dùng thuốc an thần liều cao."
+        },
+        "3_economy_and_skills": {
+          "income_source": "Quỹ từ thiện bình phong, diễn giả truyền cảm hứng.",
+          "hidden_debt": "Đang nợ một tổ chức ngầm vì thua bạc.",
+          "core_skill": "Thao túng tâm lý (Gaslighting)."
+        },
+        "4_social_network": {
+          "class": "Thượng lưu giả cầy",
+          "allies": "Giới truyền thông",
+          "hidden_enemies": "Những nạn nhân cũ đã bị hủy hoại danh tiếng."
+        },
+        "5_micro_habits": {
+          "lie_tell": "Mỗi khi nói dối, luôn chắp hai bàn tay vào nhau và nghiêng đầu mỉm cười.",
+          "stress_tick": "Cắn vào mặt trong của má đến rỉ máu."
+        },
+        "6_blindspots_and_risks": {
+          "fatal_flaw": "Quá tự tin vào khả năng kiểm soát trí óc người khác.",
+          "blackmail_secret": "Có con rơi với một người giúp việc và đang giấu nhẹm."
+        }
+      },
+      "inner_conflicts": [
+        "Ám ảnh cưỡng chế với sự sạch sẽ thể xác để bù đắp cho tâm hồn mục nát.",
+        "Luôn đóng vai nạn nhân khi bị dồn vào chân tường.",
+        "Tin rằng mình đang làm việc xấu để bảo vệ một 'lợi ích lớn lao hơn'.",
+        "Sợ hãi tột cùng việc bị công chúng phát hiện ra bản chất thật.",
+        "Thích cứu rỗi những kẻ yếu thế chỉ để thỏa mãn cảm giác mình là Chúa tể."
+      ]
+    },
+    {
+      "blueprint_id": "bp_07_manus",
+      "archetype_name": "Kẻ Cuồng Tín Trật Tự (The Perfectionist Tyrant)",
+      "elevenlabs_voice_desc": "Giọng nam/nữ trầm, uy quyền, nói gãy gọn từng âm tiết, âm lượng luôn giữ ở mức ra lệnh.",
+      "inner_conflict_pool": [
+        "Cho rằng tự do của con người là mầm mống của sự thối nát.",
+        "Ám ảnh với các quy tắc, hình phạt và sự tuân thủ tuyệt đối.",
+        "Không bao giờ tha thứ cho bất kỳ sai lầm nào, dù là nhỏ nhất.",
+        "Tin rằng bạo lực là công cụ thanh tẩy cần thiết cho một xã hội hoàn hảo.",
+        "Tự coi mình là hiện thân của công lý và luật pháp.",
+        "Đàn áp dã man những ý kiến trái chiều, coi đó là mầm mống dị giáo.",
+        "Giết người mà nhịp tim không hề thay đổi, coi đó là dọn dẹp rác.",
+        "Sở hữu một tủ quần áo màu sắc giống hệt nhau, treo cách nhau đúng 2cm.",
+        "Bị tổn thương bởi một sự kiện hỗn loạn trong quá khứ nên giờ muốn kiểm soát mọi thứ.",
+        "Sẵn sàng hy sinh hàng triệu sinh mạng nếu điều đó thiết lập được hòa bình."
+      ],
+      "core_data": {
+        "_blueprint_philosophy": "Sự hỗn loạn là một căn bệnh, và tôi là lưỡi dao phẫu thuật.",
+        "1_base_stats_matrix_1_100": {
+          "physical_and_survival": {
+            "health": 90,
+            "stamina": 90,
+            "stealth": 40,
+            "combat": 95,
+            "pain_tolerance": 100
+          },
+          "social_and_power": {
+            "charisma": 80,
+            "manipulation": 60,
+            "status": 100,
+            "intimidation": 100,
+            "networking": 50
+          },
+          "moral_and_flaws": {
+            "empathy": 0,
+            "greed": 10,
+            "betrayal_tendency": 5,
+            "narcissism": 90,
+            "guilt_capacity": 0
+          }
+        },
+        "2_biometrics_and_health": {
+          "blood_type": "AB",
+          "hidden_disease": "Rối loạn ám ảnh cưỡng chế (OCD) mức độ nặng."
+        },
+        "3_economy_and_skills": {
+          "income_source": "Gia tộc quân phiệt, ngân sách chính phủ.",
+          "hidden_debt": "Không.",
+          "core_skill": "Chỉ huy chiến thuật và tra tấn thẩm vấn."
+        },
+        "4_social_network": {
+          "class": "Giới cầm quyền tối cao",
+          "allies": "Quân đội, tòa án",
+          "hidden_enemies": "Lực lượng kháng chiến."
+        },
+        "5_micro_habits": {
+          "lie_tell": "Hắn không bao giờ nói dối, hắn chỉ bẻ cong sự thật thành luật lệ.",
+          "stress_tick": "Chỉnh lại cà vạt hoặc khuy áo cho hoàn toàn đối xứng."
+        },
+        "6_blindspots_and_risks": {
+          "fatal_flaw": "Cứng nhắc đến mức dễ đoán, không có khả năng thích nghi với sự cố phi logic.",
+          "blackmail_secret": "Có một người thân bị dị tật bẩm sinh (đại diện cho sự không hoàn hảo) đang bị giấu kín."
+        }
+      },
+      "inner_conflicts": [
+        "Tự coi mình là hiện thân của công lý và luật pháp.",
+        "Không bao giờ tha thứ cho bất kỳ sai lầm nào, dù là nhỏ nhất.",
+        "Ám ảnh với các quy tắc, hình phạt và sự tuân thủ tuyệt đối.",
+        "Bị tổn thương bởi một sự kiện hỗn loạn trong quá khứ nên giờ muốn kiểm soát mọi thứ.",
+        "Cho rằng tự do của con người là mầm mống của sự thối nát.",
+        "Tin rằng bạo lực là công cụ thanh tẩy cần thiết cho một xã hội hoàn hảo."
+      ]
+    },
+    {
+      "blueprint_id": "bp_supp_01",
+      "name": "Bà Hàng Xóm Ngồi Lê Đôi Mách",
+      "role": "supporting",
+      "archetype": "informant",
+      "description": "Nguồn thông tin tình báo số 1 của khu phố, biết mọi bí mật nhưng hay thêm thắt.",
+      "inner_conflict_pool": [
+        "Thích hóng chuyện nhưng sợ bị giang hồ hỏi thăm",
+        "Muốn được mọi người nể trọng vì biết nhiều bí mật"
+      ],
+      "used": false,
+      "inner_conflicts": [
+        "Muốn được mọi người nể trọng vì biết nhiều bí mật",
+        "Thích hóng chuyện nhưng sợ bị giang hồ hỏi thăm"
+      ]
+    },
+    {
+      "blueprint_id": "bp_05_grok",
+      "archetype_name": "Kẻ Nổi Loạn Hư Vô (The Nihilistic Rebel)",
+      "elevenlabs_voice_desc": "Giọng nam trẻ, mỉa mai, uể oải, luôn chèn những tiếng cười khẩy khô khốc vào giữa câu nói.",
+      "inner_conflict_pool": [
+        "Cho rằng mọi hệ thống quyền lực đều là rác rưởi và cần bị bóc phốt.",
+        "Thích phá vỡ bầu không khí trang trọng bằng những lời đùa cợt thô bỉ.",
+        "Chối bỏ mọi sự gắn kết tình cảm vì tin rằng cuối cùng ai cũng chết.",
+        "Sở hữu trí tuệ cực cao nhưng lại dùng nó vào việc troll xã hội.",
+        "Dùng sự cay độc để che giấu một trái tim từng bị tổn thương sâu sắc.",
+        "Không sợ hãi quyền lực, thậm chí còn thách thức những kẻ cầm súng.",
+        "Nghiện cảm giác nhìn những người đạo mạo bị lột mặt nạ.",
+        "Rất trung thành với những con chó hoang nhưng lại ghét con người.",
+        "Bị ám ảnh bởi sự đạo đức giả của giới tinh hoa.",
+        "Có xu hướng tự hủy hoại bản thân mỗi khi mọi thứ trở nên quá tốt đẹp."
+      ],
+      "core_data": {
+        "_blueprint_philosophy": "Không có gì là thiêng liêng. Không có gì quan trọng. Hãy cứ cười vào mặt chúng.",
+        "1_base_stats_matrix_1_100": {
+          "physical_and_survival": {
+            "health": 65,
+            "stamina": 70,
+            "stealth": 80,
+            "combat": 60,
+            "pain_tolerance": 75
+          },
+          "social_and_power": {
+            "charisma": 70,
+            "manipulation": 50,
+            "status": 10,
+            "intimidation": 40,
+            "networking": 30
+          },
+          "moral_and_flaws": {
+            "empathy": 40,
+            "greed": 0,
+            "betrayal_tendency": 20,
+            "narcissism": 60,
+            "guilt_capacity": 60
+          }
+        },
+        "2_biometrics_and_health": {
+          "blood_type": "O",
+          "hidden_disease": "Viêm loét dạ dày do uống quá nhiều rượu và thức khuya."
+        },
+        "3_economy_and_skills": {
+          "income_source": "Hacker mũ xám, ăn cắp tiền từ các tập đoàn tham nhũng.",
+          "hidden_debt": "Không có nợ.",
+          "core_skill": "Xâm nhập hệ thống mạng và bóc phốt."
+        },
+        "4_social_network": {
+          "class": "Kẻ bên lề (Outcast)",
+          "allies": "Nhóm hacker ngầm",
+          "hidden_enemies": "Giới chính trị gia và tài phiệt."
+        },
+        "5_micro_habits": {
+          "lie_tell": "Luôn nhếch mép cười lệch một bên khi nói dối.",
+          "stress_tick": "Lật đồng xu liên tục qua các ngón tay."
+        },
+        "6_blindspots_and_risks": {
+          "fatal_flaw": "Thiếu mục đích sống rõ ràng nên dễ chán nản và từ bỏ.",
+          "blackmail_secret": "Người thân duy nhất còn sống đang ở trong trại tâm thần."
+        }
+      },
+      "inner_conflicts": [
+        "Sở hữu trí tuệ cực cao nhưng lại dùng nó vào việc troll xã hội.",
+        "Thích phá vỡ bầu không khí trang trọng bằng những lời đùa cợt thô bỉ.",
+        "Có xu hướng tự hủy hoại bản thân mỗi khi mọi thứ trở nên quá tốt đẹp.",
+        "Rất trung thành với những con chó hoang nhưng lại ghét con người.",
+        "Bị ám ảnh bởi sự đạo đức giả của giới tinh hoa.",
+        "Chối bỏ mọi sự gắn kết tình cảm vì tin rằng cuối cùng ai cũng chết."
+      ]
+    },
+    {
+      "blueprint_id": "bp_09_copilot",
+      "archetype_name": "Kẻ Bầy Tôi Phản Trắc (The Obedient Betrayer)",
+      "elevenlabs_voice_desc": "Giọng nam, phục tùng, nhẫn nhịn, luôn hạ tông giọng xuống khi nói chuyện với người khác.",
+      "inner_conflict_pool": [
+        "Bề ngoài luôn cúi đầu phục tùng nhưng bên trong sục sôi ngọn lửa ghen tị.",
+        "Âm thầm phá hoại thành công của chủ nhân bằng những chi tiết nhỏ nhất.",
+        "Góp nhặt từng sự uất ức nhỏ nhoi để nung nấu thành kế hoạch trả thù lớn.",
+        "Tỏ ra vô hại và kém cỏi để không ai đề phòng.",
+        "Biết mọi bí mật bẩn thỉu nhất của kẻ bề trên nhưng luôn giữ im lặng.",
+        "Cảm thấy thỏa mãn tột độ khi thấy người khác thất bại vì lời khuyên 'có vẻ tốt' của mình.",
+        "Bị mắc kẹt trong thân phận thấp hèn nhưng có tham vọng của một vị vua.",
+        "Đánh cắp dần dần danh tính, đồ vật và thói quen của người mà hắn ghen tị.",
+        "Sẵn sàng chịu đòn roi không kêu ca chỉ để chờ cơ hội đâm lén sau lưng.",
+        "Đóng vai người tốt bụng, luôn an ủi nạn nhân do chính mình hãm hại."
+      ],
+      "core_data": {
+        "_blueprint_philosophy": "Cứ để bọn họ đứng trên đỉnh vinh quang. Rễ cây mục nát từ dưới lòng đất.",
+        "1_base_stats_matrix_1_100": {
+          "physical_and_survival": {
+            "health": 60,
+            "stamina": 90,
+            "stealth": 90,
+            "combat": 40,
+            "pain_tolerance": 100
+          },
+          "social_and_power": {
+            "charisma": 30,
+            "manipulation": 95,
+            "status": 20,
+            "intimidation": 10,
+            "networking": 40
+          },
+          "moral_and_flaws": {
+            "empathy": 20,
+            "greed": 85,
+            "betrayal_tendency": 100,
+            "narcissism": 80,
+            "guilt_capacity": 10
+          }
+        },
+        "2_biometrics_and_health": {
+          "blood_type": "A",
+          "hidden_disease": "Luôn bị đau lưng do tư thế cúi luồn thường xuyên."
+        },
+        "3_economy_and_skills": {
+          "income_source": "Tiền lương trợ lý, biển thủ ngân quỹ nhỏ lẻ.",
+          "hidden_debt": "Nợ gia đình một khoản lớn cản trở sự tự do.",
+          "core_skill": "Đâm lén, ngụy tạo bằng chứng và luồn cúi."
+        },
+        "4_social_network": {
+          "class": "Giai cấp phục vụ/Trợ lý",
+          "allies": "Những kẻ dưới đáy bất mãn",
+          "hidden_enemies": "Những ông chủ cũ đã bị hắn lật đổ."
+        },
+        "5_micro_habits": {
+          "lie_tell": "Luôn hạ ánh mắt xuống nhìn vào giày của đối phương khi nói dối.",
+          "stress_tick": "Nắm chặt bàn tay giấu sau lưng đến mức móng tay găm vào da."
+        },
+        "6_blindspots_and_risks": {
+          "fatal_flaw": "Mặc cảm tự ti quá lớn khiến hắn luôn sợ bị vạch trần là kẻ bất tài.",
+          "blackmail_secret": "Chính hắn đã mở cửa cho sát thủ vào giết gia đình người chủ trước."
+        }
+      },
+      "inner_conflicts": [
+        "Tỏ ra vô hại và kém cỏi để không ai đề phòng.",
+        "Bị mắc kẹt trong thân phận thấp hèn nhưng có tham vọng của một vị vua.",
+        "Đánh cắp dần dần danh tính, đồ vật và thói quen của người mà hắn ghen tị.",
+        "Bề ngoài luôn cúi đầu phục tùng nhưng bên trong sục sôi ngọn lửa ghen tị.",
+        "Đóng vai người tốt bụng, luôn an ủi nạn nhân do chính mình hãm hại.",
+        "Cảm thấy thỏa mãn tột độ khi thấy người khác thất bại vì lời khuyên 'có vẻ tốt' của mình.",
+        "Góp nhặt từng sự uất ức nhỏ nhoi để nung nấu thành kế hoạch trả thù lớn."
+      ]
+    },
+    {
+      "blueprint_id": "bp_03_deepseek",
+      "archetype_name": "Kẻ Sinh Tồn Hoang Tưởng (The Paranoid Survivor)",
+      "elevenlabs_voice_desc": "Giọng nam thấp, khô khan, thì thầm, nói rất nhanh và hay nuốt chữ như thể sợ ai đó nghe lén.",
+      "inner_conflict_pool": [
+        "Luôn tin rằng có một thế lực ngầm đang giám sát mọi hành động của mình.",
+        "Giấu vũ khí ở mọi nơi trong nhà, kể cả dưới gối và trong bồn cầu.",
+        "Không tin tưởng bất kỳ ai, ngay cả chính những ký ức của bản thân.",
+        "Mắc kẹt giữa mong muốn được cứu rỗi và bản năng phải bỏ chạy.",
+        "Từng bị phản bội cay đắng nên thà giết nhầm còn hơn bỏ sót.",
+        "Tính toán mọi đường thoát hiểm ngay khi vừa bước vào một căn phòng.",
+        "Ám ảnh với việc thu thập thông tin mã hóa và thuyết âm mưu.",
+        "Tự hủy hoại các mối quan hệ tốt đẹp vì nghi ngờ đối phương là gián điệp.",
+        "Luôn có một vali tiền mặt và hộ chiếu giả sẵn sàng dưới gầm giường.",
+        "Bị mất ngủ triền miên vì những cơn ác mộng về ngày tận thế."
+      ],
+      "core_data": {
+        "_blueprint_philosophy": "Kẻ sống sót cuối cùng là kẻ biết nín thở lâu nhất trong bóng tối.",
+        "1_base_stats_matrix_1_100": {
+          "physical_and_survival": {
+            "health": 85,
+            "stamina": 95,
+            "stealth": 100,
+            "combat": 70,
+            "pain_tolerance": 90
+          },
+          "social_and_power": {
+            "charisma": 10,
+            "manipulation": 40,
+            "status": 20,
+            "intimidation": 60,
+            "networking": 5
+          },
+          "moral_and_flaws": {
+            "empathy": 30,
+            "greed": 20,
+            "betrayal_tendency": 80,
+            "narcissism": 10,
+            "guilt_capacity": 40
+          }
+        },
+        "2_biometrics_and_health": {
+          "blood_type": "B",
+          "hidden_disease": "Rối loạn hoang tưởng (Paranoia), suy dinh dưỡng nhẹ."
+        },
+        "3_economy_and_skills": {
+          "income_source": "Tiền mã hóa (Crypto), công việc tự do ẩn danh.",
+          "hidden_debt": "Bị truy nã ngầm bởi một băng đảng.",
+          "core_skill": "Lẩn trốn, bẻ khóa và sinh tồn đô thị."
+        },
+        "4_social_network": {
+          "class": "Tầng lớp dưới đáy (Underground)",
+          "allies": "Không có",
+          "hidden_enemies": "Các tổ chức quyền lực mà hắn tin là đang đuổi theo mình."
+        },
+        "5_micro_habits": {
+          "lie_tell": "Nhìn chằm chằm vào lối ra khi đang bịa chuyện.",
+          "stress_tick": "Sờ liên tục vào con dao giấu trong áo khoác."
+        },
+        "6_blindspots_and_risks": {
+          "fatal_flaw": "Sự nghi ngờ thái quá khiến hắn tự cô lập và dồn mình vào chỗ chết.",
+          "blackmail_secret": "Đã giết một người vô tội vì tưởng nhầm là sát thủ."
+        }
+      },
+      "inner_conflicts": [
+        "Mắc kẹt giữa mong muốn được cứu rỗi và bản năng phải bỏ chạy.",
+        "Luôn có một vali tiền mặt và hộ chiếu giả sẵn sàng dưới gầm giường.",
+        "Không tin tưởng bất kỳ ai, ngay cả chính những ký ức của bản thân.",
+        "Luôn tin rằng có một thế lực ngầm đang giám sát mọi hành động của mình.",
+        "Tính toán mọi đường thoát hiểm ngay khi vừa bước vào một căn phòng.",
+        "Giấu vũ khí ở mọi nơi trong nhà, kể cả dưới gối và trong bồn cầu."
+      ]
+    }
+  ],
+  "locations": [
+    {
+      "location_id": "loc_03",
+      "name": "Phòng Trọ Sinh Viên",
+      "cooldown_remaining": 0,
+      "last_used_episode": 0
+    },
+    {
+      "location_id": "loc_02",
+      "name": "Quán Trà Đá Vỉa Hè",
+      "cooldown_remaining": 0,
+      "last_used_episode": 0
+    },
+    {
+      "location_id": "loc_01",
+      "name": "Sàn Giao Dịch BĐS Xập Xệ",
+      "cooldown_remaining": 0,
+      "last_used_episode": 0
+    }
+  ],
+  "platform_rules": {
+    "target_platform": "tiktok",
+    "technical_constraints": {
+      "max_duration_seconds": 180,
+      "pacing_style": "hyper_kinetic",
+      "hook_window_seconds": 3
+    },
+    "content_guidelines": {
+      "pg_rating": "PG-13",
+      "violence_rule": "Cấm miêu tả máu me trực tiếp. Chuyển hóa bạo lực thành đòn tấn công tâm lý hoặc sử dụng từ lóng (VD: 'đăng xuất', 'tiễn đi').",
+      "romance_rule": "Không có yếu tố 18+. Tập trung vào thao túng tâm lý (toxic traits), ghen tuông và phản bội.",
+      "banned_themes": [
+        "Tự sát trực tiếp",
+        "Chính trị nhạy cảm",
+        "Tôn giáo cực đoan",
+        "Phân biệt chủng tộc"
+      ]
+    },
+    "mandatory_structure": {
+      "scene_8": "Bắt buộc có Plot Twist / Glitch",
+      "scene_15": "Bắt buộc dừng đột ngột (Cliffhanger), không có hậu (No happy ending)"
+    }
+  },
+  "world_pressures": {
+    "social_pressure": [],
+    "technology_pressure": [
+      {
+        "pressure_id": "P_000",
+        "type": "fear_of_replacement",
+        "intensity": 25,
+        "affected_factions": [
+          "guild",
+          "church"
+        ],
+        "chimera_translation": "pháp sư bị golem thay thế"
+      },
+      {
+        "pressure_id": "P_003",
+        "type": "fear_of_replacement",
+        "intensity": 25,
+        "affected_factions": [
+          "guild",
+          "church"
+        ],
+        "chimera_translation": "pháp sư bị golem thay thế"
+      },
+      {
+        "pressure_id": "P_014",
+        "type": "fear_of_replacement",
+        "intensity": 25,
+        "affected_factions": [
+          "guild",
+          "church"
+        ],
+        "chimera_translation": "pháp sư bị golem thay thế"
+      },
+      {
+        "pressure_id": "P_017",
+        "type": "fear_of_replacement",
+        "intensity": 25,
+        "affected_factions": [
+          "guild",
+          "church"
+        ],
+        "chimera_translation": "pháp sư bị golem thay thế"
+      },
+      {
+        "pressure_id": "P_019",
+        "type": "fear_of_replacement",
+        "intensity": 25,
+        "affected_factions": [
+          "guild",
+          "church"
+        ],
+        "chimera_translation": "pháp sư bị golem thay thế"
+      },
+      {
+        "pressure_id": "P_024",
+        "type": "fear_of_replacement",
+        "intensity": 25,
+        "affected_factions": [
+          "guild",
+          "church"
+        ],
+        "chimera_translation": "pháp sư bị golem thay thế"
+      }
+    ],
+    "culture_pressure": [],
+    "economy_pressure": [],
+    "emotion_pressure": []
+  },
+  "trend_phrase": {
+    "phrase": "khong ai biet su that",
+    "platform": "TikTok"
+  },
+  "world_rules": [],
+  "secret_item": {
+    "item_id": "item_03_chip_ky_uc",
+    "name": "Chip Cấy Ký Ức Giả (Neural Overrider)",
+    "rarity": "Rare",
+    "effect_rule": "Khiến đối phương tin rằng mình là kẻ thù truyền kiếp của chính gia đình họ. Có thể kích hoạt bằng sóng âm.",
+    "world_origin": "vn_cyberpunk_2150"
+  },
+  "supporting_cast": [
+    {
+      "blueprint_id": "bp_supp_02",
+      "name": "Chủ Nợ Giang Hồ",
+      "role": "supporting",
+      "archetype": "antagonist_minor",
+      "description": "Xuất hiện vào những lúc không ai mong muốn nhất, luôn mang theo áp lực tài chính.",
+      "inner_conflict_pool": [
+        "Bề ngoài hung hãn nhưng thực chất đang bị cấp trên ép doanh số",
+        "Muốn hoàn lương nhưng trót mang nợ ân tình đại ca"
+      ],
+      "used": false
+    },
+    {
+      "blueprint_id": "bp_supp_04",
+      "name": "Cô Bán Trà Đá",
+      "role": "supporting",
+      "archetype": "observer",
+      "description": "Trạm thu phát sóng thông tin vỉa hè, người chứng kiến mọi biến cố nhưng luôn tỏ ra vô can.",
+      "inner_conflict_pool": [
+        "Muốn yên ổn buôn bán nhưng cứ hay bị cuốn vào drama",
+        "Biết quá nhiều bí mật của khách hàng nhưng không dám nói"
+      ],
+      "used": false
+    }
+  ],
+  "context_slice_v2": {
+    "layer_1_lore": "",
+    "layer_2_character_states": {},
+    "layer_3_relationships": {},
+    "layer_4_world_pressures": [],
+    "layer_5_ongoing_consequences": [],
+    "layer_6_mandatory_tasks": [],
+    "layer_7_ticking_bombs": [],
+    "layer_8_overdue_hooks": []
+  }
+}
