@@ -54,7 +54,7 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
-          python scripting_pipeline.py
+          python main_creative_pipeline.py
 
       - name: Upload Master Script Artifact
         if: always()
