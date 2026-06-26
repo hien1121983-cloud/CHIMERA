@@ -35,7 +35,7 @@ jobs:
           GEMINI_KEY_4: ${{ secrets.GEMINI_API_KEY4 }}
           GEMINI_KEY_5: ${{ secrets.GEMINI_API_KEY5 }}
           GEMINI_KEY_6: ${{ secrets.GEMINI_API_KEY6 }}
-          GEMINI_KEY_6: ${{ secrets.GEMINI_API_KEY6 }}
+          GEMINI_KEY_7: ${{ secrets.GEMINI_API_KEY7 }}
           
           GROQ_KEY_1: ${{ secrets.GROQ_API_KEY1 }}
           GROQ_KEY_2: ${{ secrets.GROQ_API_KEY2 }}
