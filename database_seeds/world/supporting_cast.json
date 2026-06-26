@@ -1,0 +1,17 @@
+{
+  "location_settings": [
+    {
+      "location_id": "loc_001",
+      "name": "Quán Trà Đá Vỉa Hè",
+      "cooldown_remaining": 0,
+      "last_used_episode": 0
+    },
+    {
+      "location_id": "loc_002",
+      "name": "Sàn Giao Dịch Crypto",
+      "cooldown_remaining": 0,
+      "last_used_episode": 0
+    }
+  ]
+}
+
