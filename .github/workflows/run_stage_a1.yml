@@ -1,4 +1,4 @@
-name: ️CHẠY BẢN 1: Thu thập & Mô phỏng (Stage 1)
+name: ⚙️ CHẠY BẢN 1: Thu thập & Mô phỏng (Stage 1)
 
 on:
   workflow_dispatch:
@@ -21,21 +21,18 @@ jobs:
       - name: 📦 Cài đặt thư viện (Dependencies)
         run: |
           python -m pip install --upgrade pip
-          pip install pymongo pydantic python-dotenv requests feedparser
+          pip install -r requirements.txt || pip install pymongo pydantic python-dotenv requests feedparser
 
       - name: 🚀 Khởi chạy Bản 1 (main_pipeline.py)
         env:
-          # Ép 3 Secret từ GitHub vào đúng 3 biến môi trường của hệ thống CHIMERA
           MONGODB_URI_PERMANENT: ${{ secrets.MONGODB_URL_NO1 }}
           MONGODB_URI_PURGATORY: ${{ secrets.MONGODB_URL_NO2 }}
           MONGODB_URI_CANON: ${{ secrets.MONGODB_URL_NO3 }}
-          
-          # Biến môi trường cho Telegram Alert
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
           echo "Đang kích hoạt quy trình thu thập T0 -> T0h và Engine T0i..."
-          python main_pipeline.py
+          python main_pipeline.py || exit 1
 
       - name: 📋 Trích xuất Kết quả (Nghiệm thu Master_Payload)
         if: always()
@@ -43,7 +40,7 @@ jobs:
         with:
           name: KET-QUA-BAN-1-Master-Payload
           path: |
+            cache/master_payload_latest.json
             cache/
             *.log
           retention-days: 7
-          
