@@ -1,0 +1,41 @@
+name: 🧠 Nạp Dữ Liệu Nền Cụm Não Số 1 (Database Seeder)
+
+on:
+  workflow_dispatch: # Kích hoạt bằng nút bấm thủ công trên giao diện GitHub Actions
+
+jobs:
+  seed-database:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: 📥 Kéo mã nguồn về máy ảo
+        uses: actions/checkout@v4
+
+      - name: 🐍 Thiết lập môi trường Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: 'pip' # Tăng tốc độ cài đặt
+
+      - name: 📦 Cài đặt thư viện Pymongo
+        run: |
+          python -m pip install --upgrade pip
+          pip install pymongo
+
+      - name: 🚀 Khởi chạy chiến dịch nạp dữ liệu (Seeder)
+        env:
+          # Lấy API Key từ Github Secrets nạp vào môi trường ảo
+          MONGODB_URI_PERMANENT: ${{ secrets.MONGODB_URI_PERMANENT }}
+        run: |
+          echo "Bắt đầu chạy file database_seeder.py..."
+          python database_seeder.py
+
+      - name: 📋 Lưu báo cáo Log (Nghiệm thu nhiệm vụ)
+        if: always() # Chạy dù bước trên thành công hay thất bại
+        uses: actions/upload-artifact@v4
+        with:
+          name: Báo-Cáo-Nạp-Dữ-Liệu-DB
+          path: seeding_report.log
+          retention-days: 7
+          
