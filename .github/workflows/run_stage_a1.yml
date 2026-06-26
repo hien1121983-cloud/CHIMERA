@@ -1,4 +1,4 @@
-name: ️ CHẠY BẢN 1: Thu thập & Mô phỏng (Stage 1)
+name: ️CHẠY BẢN 1: Thu thập & Mô phỏng (Stage 1)
 
 on:
   workflow_dispatch:
