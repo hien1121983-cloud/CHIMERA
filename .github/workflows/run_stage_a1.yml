@@ -25,11 +25,19 @@ jobs:
 
       - name: Run Main Pipeline
         env:
+          # --- DATABASE & BOT ---
           MONGODB_URI_PERMANENT: ${{ secrets.MONGODB_URL_NO1 }}
           MONGODB_URI_PURGATORY: ${{ secrets.MONGODB_URL_NO2 }}
           MONGODB_URI_CANON: ${{ secrets.MONGODB_URL_NO3 }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          
+          # --- API KEYS CHO HEALTH CHECKER ---
+          # Lấy Key từ GitHub Secrets truyền vào biến môi trường
+          GEMINI_KEY_1: ${{ secrets.GEMINI_KEY_1 }}
+          GROQ_KEY_1: ${{ secrets.GROQ_KEY_1 }}
+          ELEVENLABS_KEY_1: ${{ secrets.ELEVENLABS_KEY_1 }}
+          
         run: |
           python main_pipeline.py
 
@@ -42,3 +50,4 @@ jobs:
             cache/
             *.log
           retention-days: 7
+          
