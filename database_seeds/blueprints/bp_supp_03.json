@@ -1,0 +1,13 @@
+{
+  "blueprint_id": "bp_supp_03",
+  "name": "Thám Tử Tư Rởm",
+  "role": "supporting",
+  "archetype": "ally",
+  "description": "Chuyên gia ăn bám, thỉnh thoảng cung cấp được manh mối hữu ích nhờ ăn may.",
+  "inner_conflict_pool": [
+    "Ảo tưởng bản thân là Sherlock Holmes",
+    "Luôn trong tình trạng rỗng túi và trốn nợ tiền trọ"
+  ],
+  "used": false
+}
+
