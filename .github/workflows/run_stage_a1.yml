@@ -32,11 +32,11 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           
-          # --- API KEYS CHO HEALTH CHECKER ---
-          # Lấy Key từ GitHub Secrets truyền vào biến môi trường
-          GEMINI_KEY_1: ${{ secrets.GEMINI_KEY_1 }}
-          GROQ_KEY_1: ${{ secrets.GROQ_KEY_1 }}
-          ELEVENLABS_KEY_1: ${{ secrets.ELEVENLABS_KEY_1 }}
+          # --- BẮT CẦU API KEYS CHO HEALTH CHECKER ---
+          # (Trái: Tên Python cần) = (Phải: Tên chính xác bạn lưu trên GitHub)
+          GEMINI_KEY_1: ${{ secrets.GEMINI_API_KEY1 }}
+          GROQ_KEY_1: ${{ secrets.GROQ_API_KEY }}
+          ELEVENLABS_KEY_1: ${{ secrets.ELEVENLABS_KEY1 }}
           
         run: |
           python main_pipeline.py
