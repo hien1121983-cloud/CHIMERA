@@ -54,7 +54,8 @@ def run_stage_1() -> MasterPayload:
     logger.info(f"[Stage1] Health check: {health}")
 
     # 2. Chay song song cac tram T0x (Va I-01)
-    with ThreadPoolExecutor(max_workers=4) as pool:
+    # Sua max_workers tu 4 thanh 1 de cac tram chay tuan tu, tranh loi SQLite "database is locked"
+    with ThreadPoolExecutor(max_workers=1) as pool:
         futures = {
             name: pool.submit(cls().run) for name, cls in STATION_MAP.items()
         }
@@ -112,3 +113,4 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"\nFAIL Giai doan 1 that bai: {e}")
         raise
+        
