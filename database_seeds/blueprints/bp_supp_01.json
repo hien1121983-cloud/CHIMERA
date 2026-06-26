@@ -1,0 +1,12 @@
+{
+  "blueprint_id": "bp_supp_01",
+  "name": "Bà Hàng Xóm Ngồi Lê Đôi Mách",
+  "role": "supporting",
+  "archetype": "informant",
+  "description": "Nguồn thông tin tình báo số 1 của khu phố, biết mọi bí mật nhưng hay thêm thắt.",
+  "inner_conflict_pool": [
+    "Thích hóng chuyện nhưng sợ bị giang hồ hỏi thăm",
+    "Muốn được mọi người nể trọng vì biết nhiều bí mật"
+  ],
+  "used": false
+}
