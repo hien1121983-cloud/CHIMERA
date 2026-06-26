@@ -1,0 +1,13 @@
+{
+  "blueprint_id": "bp_supp_02",
+  "name": "Chủ Nợ Giang Hồ",
+  "role": "supporting",
+  "archetype": "antagonist_minor",
+  "description": "Xuất hiện vào những lúc không ai mong muốn nhất, luôn mang theo áp lực tài chính.",
+  "inner_conflict_pool": [
+    "Bề ngoài hung hãn nhưng thực chất đang bị cấp trên ép doanh số",
+    "Muốn hoàn lương nhưng trót mang nợ ân tình đại ca"
+  ],
+  "used": false
+}
+
