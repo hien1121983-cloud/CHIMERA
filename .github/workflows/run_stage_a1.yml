@@ -1,7 +1,7 @@
-name: ⚙️ CHẠY BẢN 1: Thu thập & Mô phỏng (Stage 1)
+name: RUN STAGE 1 PIPELINE
 
 on:
-  workflow_dispatch:
+  workflow_dispatch: {}
 
 jobs:
   run-stage-1:
@@ -9,25 +9,21 @@ jobs:
     timeout-minutes: 15
 
     steps:
-      - name: 📥 Kéo mã nguồn về máy ảo
+      - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: 🐍 Thiết lập môi trường Python 3.11
+      - name: Setup Python 3.11
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
           cache: 'pip'
 
-      - name: 📦 Cài đặt thư viện (Dependencies)
+      - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
-          if [ -f requirements.txt ]; then
-            pip install -r requirements.txt
-          else
-            pip install pymongo pydantic python-dotenv requests feedparser
-          fi
+          pip install pymongo pydantic python-dotenv requests feedparser
 
-      - name: 🚀 Khởi chạy Bản 1 (main_pipeline.py)
+      - name: Run Main Pipeline
         env:
           MONGODB_URI_PERMANENT: ${{ secrets.MONGODB_URL_NO1 }}
           MONGODB_URI_PURGATORY: ${{ secrets.MONGODB_URL_NO2 }}
@@ -35,32 +31,15 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
-          echo "Đang kích hoạt quy trình thu thập T0 -> T0h và Engine T0i..."
-          if [ ! -f main_pipeline.py ]; then
-            echo "❌ LỖI: main_pipeline.py không tìm thấy!"
-            exit 1
-          fi
-          python main_pipeline.py || exit 1
-          echo "✅ main_pipeline.py chạy thành công"
+          python main_pipeline.py
 
-      - name: 📋 Trích xuất Kết quả (Nghiệm thu Master_Payload)
+      - name: Upload Master Payload Artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: KET-QUA-BAN-1-Master-Payload
+          name: Master-Payload-Result
           path: |
-            cache/master_payload_latest.json
             cache/
             *.log
           retention-days: 7
-
-      - name: 📊 Hiển thị trạng thái cuối cùng
-        if: always()
-        run: |
-          echo "════════════════════════════════════════"
-          echo "🔍 SỰ KIỆN WORKFLOW STAGE 1 - KẾT THÚC"
-          echo "════════════════════════════════════════"
-          echo "⏱️  Thời gian: $(date)"
-          echo "📁 File cache:"
-          ls -lh cache/ 2>/dev/null || echo "  ⚠️  Cache trống"
-          echo "════════════════════════════════════════"
+          
