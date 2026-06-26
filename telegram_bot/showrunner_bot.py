@@ -1,135 +1,56 @@
-"""FastAPI webhook + asyncio.Event de cho Showrunner duyet (Va M-07)."""
+"""
+Showrunner Bot - Chạy ở chế độ Polling (Không cần FastAPI/Uvicorn)
+"""
 import os
-import asyncio
 import logging
-import threading
-from contextlib import asynccontextmanager
+from telegram.ext import Application, CommandHandler
 
-import uvicorn
-from fastapi import FastAPI, Request
-
-from config.settings import settings
+# Import các handler từ file handlers.py của bạn
+# (Lưu ý: Đảm bảo tên các hàm dưới đây khớp với file handlers.py thực tế của bạn)
+from telegram_bot.handlers import start, status, approve, reject
 
 logger = logging.getLogger(__name__)
 
-# === Trang thai cho duyet (cung event loop) ===
-_approval_event = asyncio.Event()
-_approval_decision = None
+def create_bot():
+    """Khởi tạo và cấu hình ứng dụng Bot."""
+    token = os.getenv("TELEGRAM_BOT_TOKEN")
+    if not token:
+        logger.warning("[Showrunner Bot] CRITICAL: Thiếu TELEGRAM_BOT_TOKEN trong .env")
+        return None
+        
+    # Xây dựng ứng dụng bot
+    application = Application.builder().token(token).build()
+    
+    # Đăng ký các lệnh (Commands)
+    application.add_handler(CommandHandler("start", start))
+    application.add_handler(CommandHandler("status", status))
+    application.add_handler(CommandHandler("approve", approve))
+    application.add_handler(CommandHandler("reject", reject))
+    
+    return application
 
+# Khởi tạo biến toàn cục để các file khác (như main_creative_pipeline) có thể import
+bot_app = create_bot()
 
-def _get_bot():
-    import telegram
+def start_bot():
+    """Hàm khởi động chính của Bot ở chế độ Polling."""
+    if not bot_app:
+        logger.error("[Showrunner Bot] Không thể khởi động do thiếu Token.")
+        return
+        
+    logger.info("=" * 50)
+    logger.info("[Showrunner Bot] KHỞI ĐỘNG THÀNH CÔNG Ở CHẾ ĐỘ POLLING")
+    logger.info("=" * 50)
+    
+    # Chạy Polling. 
+    # drop_pending_updates=True giúp bot bỏ qua các tin nhắn cũ lúc nó đang tắt, tránh kẹt lệnh.
+    bot_app.run_polling(drop_pending_updates=True)
 
-    return telegram.Bot(token=os.getenv("TELEGRAM_BOT_TOKEN"))
-
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    logger.info("[ShowrunnerBot] Khoi dong webhook server")
-    yield
-    logger.info("[ShowrunnerBot] Dung webhook server")
-
-
-app = FastAPI(title="Chimera Showrunner Bot", lifespan=lifespan)
-
-
-@app.post("/webhook/telegram")
-async def telegram_webhook(request: Request):
-    global _approval_decision
-    update = await request.json()
-
-    callback = update.get("callback_query")
-    if callback:
-        data = callback.get("data")
-        logger.info(f"[ShowrunnerBot] Nhan callback: {data}")
-        _approval_decision = data
-        _approval_event.set()
-    return {"ok": True}
-
-
-@app.get("/health")
-async def health():
-    return {"status": "ok"}
-
-
-def start_webhook_server(host: str = "0.0.0.0", port: int = 8443):
-    """Chay FastAPI trong thread rieng."""
-    config = uvicorn.Config(app, host=host, port=port, log_level="warning")
-    server = uvicorn.Server(config)
-    server.run()
-
-
-def launch_webhook_in_background(host: str = "0.0.0.0", port: int = 8443):
-    thread = threading.Thread(
-        target=start_webhook_server, args=(host, port), daemon=True
+if __name__ == "__main__":
+    # Thiết lập log khi chạy test độc lập file này
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
     )
-    thread.start()
-    logger.info(f"[ShowrunnerBot] Webhook server chay nen tai {host}:{port}")
-    return thread
-
-
-async def send_approval_request(text: str, video_summary: dict = None):
-    """Gui yeu cau duyet kem inline keyboard."""
-    global _approval_decision
-    import telegram
-    from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-
-    bot = _get_bot()
-    keyboard = InlineKeyboardMarkup([
-        [
-            InlineKeyboardButton("DUYET & RENDER", callback_data="APPROVE"),
-            InlineKeyboardButton("TU CHOI", callback_data="REJECT"),
-        ],
-        [
-            InlineKeyboardButton(
-                "VIET LAI (Bom noi tam cuc doan)",
-                callback_data="REWRITE_EXTREME",
-            )
-        ],
-    ])
-    # FIX #2: Reset ca event lan decision truoc khi gui yeu cau moi.
-    # Truoc day chi clear event nhung _approval_decision van giu gia tri cu,
-    # neu webhook duoc goi truoc wait() thi gia tri cu se duoc tra ve.
-    _approval_decision = None
-    _approval_event.clear()
-
-    await bot.send_message(
-        chat_id=os.getenv("TELEGRAM_CHAT_ID"),
-        text=text,
-        parse_mode="HTML",
-        reply_markup=keyboard,
-    )
-
-
-async def wait_for_showrunner(timeout: float = None) -> str:
-    """Ngu cho den khi Showrunner bam nut.
-
-    FIX #2: Truoc day timeout=None -> pipeline treo vinh vien neu Showrunner
-    khong phan hoi. Nay dung settings.SHOWRUNNER_TIMEOUT_HOURS lam default.
-    Caller co the override bang tham so timeout (tinh bang giay).
-    """
-    global _approval_decision
-
-    effective_timeout = timeout if timeout is not None else (settings.SHOWRUNNER_TIMEOUT_HOURS * 3600)
-
-    logger.info(
-        f"[ShowrunnerBot] Cho Showrunner duyet "
-        f"(timeout={effective_timeout / 3600:.1f}h)..."
-    )
-
-    try:
-        await asyncio.wait_for(_approval_event.wait(), timeout=effective_timeout)
-    except asyncio.TimeoutError:
-        logger.critical(
-            f"[ShowrunnerBot] Showrunner khong phan hoi trong "
-            f"{settings.SHOWRUNNER_TIMEOUT_HOURS:.1f} gio. "
-            f"Pipeline bi huy tu dong."
-        )
-        raise TimeoutError(
-            f"Showrunner timeout sau {settings.SHOWRUNNER_TIMEOUT_HOURS:.1f} gio. "
-            f"Kiem tra Telegram bot va thu lai."
-        )
-
-    decision = _approval_decision
-    logger.info(f"[ShowrunnerBot] Showrunner da quyet dinh: {decision}")
-    return decision
+    start_bot()
+    
