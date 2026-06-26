@@ -1,0 +1,13 @@
+{
+  "blueprint_id": "bp_supp_05",
+  "name": "Kẻ Lừa Đảo Mạng (Chuyên úp bô)",
+  "role": "supporting",
+  "archetype": "trickster",
+  "description": "Chuyên gia lùa gà, luôn tìm cơ hội trục lợi từ sự ngây thơ của người khác.",
+  "inner_conflict_pool": [
+    "Sợ ngày bị công an bế đi",
+    "Luôn phải vắt óc nghĩ kịch bản mới để lừa đảo"
+  ],
+  "used": false
+}
+
