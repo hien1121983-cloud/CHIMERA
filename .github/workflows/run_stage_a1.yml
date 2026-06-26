@@ -1,4 +1,4 @@
-name: RUN STAGE 1 PIPELINE
+name: ⚙️ CHẠY BẢN 1: Thu thập & Mô phỏng (Stage 1)
 
 on:
   workflow_dispatch: {}
@@ -9,22 +9,22 @@ jobs:
     timeout-minutes: 15
 
     steps:
-      - name: Checkout Code
+      - name: 📥 Kéo mã nguồn về máy ảo
         uses: actions/checkout@v4
 
-      - name: Setup Python 3.11
+      - name: 🐍 Thiết lập Python 3.11
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
           cache: 'pip'
 
-      - name: Install Dependencies
+      - name: 📦 Cài đặt thư viện
         run: |
           python -m pip install --upgrade pip
-          # Đã bổ sung thêm aiohttp vào danh sách cài đặt
-          pip install pymongo pydantic python-dotenv requests feedparser aiohttp
+          # Đã bổ sung pydantic-settings vào danh sách cài đặt
+          pip install pymongo pydantic pydantic-settings python-dotenv requests feedparser aiohttp
 
-      - name: Run Main Pipeline
+      - name: 🚀 Khởi chạy Bản 1
         env:
           MONGODB_URI_PERMANENT: ${{ secrets.MONGODB_URL_NO1 }}
           MONGODB_URI_PURGATORY: ${{ secrets.MONGODB_URL_NO2 }}
@@ -34,11 +34,11 @@ jobs:
         run: |
           python main_pipeline.py
 
-      - name: Upload Master Payload Artifact
+      - name: 📋 Trích xuất Kết quả (Master Payload)
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: Master-Payload-Result
+          name: KET-QUA-BAN-1-Master-Payload
           path: |
             cache/
             *.log
