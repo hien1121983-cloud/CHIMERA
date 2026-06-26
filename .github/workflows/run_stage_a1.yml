@@ -21,7 +21,8 @@ jobs:
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pymongo pydantic python-dotenv requests feedparser
+          # Đã bổ sung thêm aiohttp vào danh sách cài đặt
+          pip install pymongo pydantic python-dotenv requests feedparser aiohttp
 
       - name: Run Main Pipeline
         env:
