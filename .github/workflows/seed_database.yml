@@ -1,7 +1,7 @@
 name: 🧠 Nạp Dữ Liệu Nền Cụm Não Số 1 (Database Seeder)
 
 on:
-  workflow_dispatch: # Kích hoạt bằng nút bấm thủ công trên giao diện GitHub Actions
+  workflow_dispatch:
 
 jobs:
   seed-database:
@@ -16,7 +16,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-          cache: 'pip' # Tăng tốc độ cài đặt
+          cache: 'pip'
 
       - name: 📦 Cài đặt thư viện Pymongo
         run: |
@@ -25,17 +25,16 @@ jobs:
 
       - name: 🚀 Khởi chạy chiến dịch nạp dữ liệu (Seeder)
         env:
-          # Lấy API Key từ Github Secrets nạp vào môi trường ảo
-          MONGODB_URI_PERMANENT: ${{ secrets.MONGODB_URI_PERMANENT }}
+          # Đã sửa lại tên secret khớp 100% với lỗi gõ máy (có chữ G) trong ảnh của bạn
+          MONGODB_URI_PERMANENT: ${{ secrets.MONGODGB_URI_PERMANENT }}
         run: |
           echo "Bắt đầu chạy file database_seeder.py..."
           python database_seeder.py
 
       - name: 📋 Lưu báo cáo Log (Nghiệm thu nhiệm vụ)
-        if: always() # Chạy dù bước trên thành công hay thất bại
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: Báo-Cáo-Nạp-Dữ-Liệu-DB
           path: seeding_report.log
           retention-days: 7
-          
