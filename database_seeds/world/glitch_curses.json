@@ -1,0 +1,60 @@
+{
+  "glitch_curses": [
+    {
+      "curse_id": "gc_01_royal_debt",
+      "curse_name": "Thâm Cung Đoạt... Sổ Đỏ",
+      "world_target": "vn_historical_myth",
+      "assigned_identities": {
+        "character_A": "Hoàng Đế / Thái Hậu (Quyền lực tối cao)",
+        "character_B": "Thái Giám / Nô tỳ (Thấp hèn nhất)"
+      },
+      "the_absurdity": "Thân phận bị đảo lộn ngẫu nhiên. Có thể đứa đang mang nợ lại biến thành Hoàng Đế, còn chủ nợ biến thành Thái Giám.",
+      "llm_acting_instruction": "Bắt buộc dùng từ vựng cung đình (Trẫm, Bổn cung, Cẩu nô tài, Tru di cửu tộc). Nhân vật mang thân phận Hoàng Đế liên tục dọa chém đầu đối phương nếu không chịu... xé giấy nợ hoặc sang tên chung cư. Thái giám thì quỳ lạy nhưng miệng vẫn lầm bầm chửi thề đòi lại tiền."
+    },
+    {
+      "curse_id": "gc_02_xianxia_scam",
+      "curse_name": "Tu Chân Giới Úp Bô",
+      "world_target": "vn_xianxia_dark",
+      "assigned_identities": {
+        "character_A": "Trưởng môn phái / Đại Tiên (Đạo mạo)",
+        "character_B": "Ma Tôn / Hắc Ám (Ác độc)"
+      },
+      "the_absurdity": "Hai kẻ đang cãi nhau chuyện lừa đảo đa cấp, lùa gà mua đất ảo đột nhiên biến thành những thực thể sống hàng vạn năm, sở hữu phép thuật dời non lấp bể.",
+      "llm_acting_instruction": "Dùng ngôn ngữ tu tiên (Đạo hữu, Bản tọa, Thiên kiếp, Đột phá). Đòi nợ bằng Linh thạch. Chửi đối phương là 'Nghịch thiên tu đạo mà cái mã Freeship 15k cũng đi giành với Bản tọa'. Thi triển cấm thuật hủy diệt thế giới chỉ để ép đối phương phải unfollow người yêu cũ."
+    },
+    {
+      "curse_id": "gc_03_cyberpunk_labor",
+      "curse_name": "Tư Bản Bán Phổi",
+      "world_target": "vn_cyberpunk_2150",
+      "assigned_identities": {
+        "character_A": "AI Quản lý Tập đoàn (Vô cảm, máy móc)",
+        "character_B": "Cyborg rác thải (Cơ thể chắp vá)"
+      },
+      "the_absurdity": "Xung đột đời thường (cãi nhau chuyện đi làm muộn, quỵt lương) bị nâng tầm lên thành sinh tử. Lương không trả bằng tiền, mà trả bằng... dung lượng oxy.",
+      "llm_acting_instruction": "Sử dụng từ vựng công nghệ (Băng thông, Cấy ghép, Reset não). Đe dọa nhau bằng việc hack hệ thống tim mạch hoặc ngắt kết nối phổi nhân tạo. Mâu thuẫn cực kỳ nhỏ nhặt (ví dụ: chia tay đòi quà) nhưng cách giải quyết là format lại bộ nhớ của đối phương."
+    },
+    {
+      "curse_id": "gc_04_animal_kingdom",
+      "curse_name": "Lục Đạo Luân Hồi (Súc Sinh Đạo)",
+      "world_target": "vn_modern_2026",
+      "assigned_identities": {
+        "character_A": "Chó Poodle (Chảnh chọe, sống nhà giàu)",
+        "character_B": "Gà trống ta / Mèo mướp (Bần nông, hung hãn)"
+      },
+      "the_absurdity": "Các nhân vật bị biến thành động vật nhưng vẫn giữ tư duy con người. Dù đang cãi nhau về chuyện cắm sừng hay ngoại tình, họ vẫn bị bản năng động vật chi phối.",
+      "llm_acting_instruction": "Nhân vật vẫn chửi bới gay gắt về mâu thuẫn con người, nhưng hành động bị ép theo bản năng: Đang cãi hăng thì phải sủa, gáy, mổ thóc hoặc cào ghế sofa. Cực kỳ nghiêm túc đánh ghen bằng cách giành giật bát hạt Whiskas."
+    },
+    {
+      "curse_id": "gc_05_school_trauma",
+      "curse_name": "Sổ Đầu Bài Tử Thần",
+      "world_target": "vn_modern_2026",
+      "assigned_identities": {
+        "character_A": "Cô giáo chủ nhiệm sát thủ (Quyền lực tuyệt đối)",
+        "character_B": "Học sinh lớp 1 cá biệt (Thấp cổ bé họng)"
+      },
+      "the_absurdity": "Đại ca giang hồ hoặc chủ tịch công ty bỗng bị teo nhỏ thành học sinh lớp 1, còn kẻ thù truyền kiếp biến thành cô giáo chủ nhiệm cầm thước kẻ.",
+      "llm_acting_instruction": "Kẻ làm 'Học sinh' vẫn giữ thái độ giang hồ hổ báo, xưng 'Mày - Tao', đòi thanh toán nợ nần. Kẻ làm 'Cô giáo' dùng quyền lực giáo dục (Ghi Sổ đầu bài, Mời phụ huynh, Đứng xó) để đàn áp lại. Tuyệt đối không để nhân vật tỏ ra dễ thương, phải giữ sự hằn học của người lớn trong hình hài trẻ con."
+    }
+  ]
+}
+
