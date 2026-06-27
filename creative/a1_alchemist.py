@@ -8,7 +8,6 @@ from creative.schemas import A1Output
 
 logger = logging.getLogger(__name__)
 
-
 class A1Alchemist:
     """Tram A1: Goi Gemini 2.5 Flash de sinh 3 ban nhap kich ban."""
 
@@ -16,10 +15,7 @@ class A1Alchemist:
         self.model_name = "gemini-2.5-flash"
 
     def generate_3_drafts(self, master_payload: dict, _attempt: int = 0) -> list:
-        """Sinh 3 ban nhap voi co che retry huu han.
-
-        Va C-01: Gioi han so lan thu bang active_count + 1.
-        """
+        """Sinh 3 ban nhap voi co che retry huu han."""
         import google.generativeai as genai
 
         max_attempts = GEMINI_POOL.active_count + 1
@@ -36,24 +32,31 @@ class A1Alchemist:
         try:
             genai.configure(api_key=key)
             
-            # FIX LỖI maxItems: Ép Gemini sinh đúng 3 drafts thông qua Prompt thay vì Schema
+            # GIẢI PHÁP TỐI THƯỢNG: Trích xuất Schema từ Pydantic và nhúng thẳng vào Prompt
+            # Điều này giúp lách qua hoàn toàn bộ dịch Schema bị lỗi của thư viện genai cũ.
+            schema_str = json.dumps(A1Output.model_json_schema(), ensure_ascii=False, indent=2)
             enforced_prompt = (
                 A1_SYSTEM_PROMPT + 
-                "\n\n[QUAN TRỌNG] BẮT BUỘC TRẢ VỀ CHÍNH XÁC 3 BẢN NHÁP (DRAFTS) TRONG MẢNG. KHÔNG ĐƯỢC NHIỀU HƠN HOẶC ÍT HƠN."
+                "\n\n[QUAN TRỌNG] BẮT BUỘC TRẢ VỀ CHÍNH XÁC 3 BẢN NHÁP (DRAFTS) TRONG MẢNG.\n"
+                "BẠN BẮT BUỘC PHẢI TRẢ VỀ DỮ LIỆU JSON TUÂN THỦ NGHIÊM NGẶT CẤU TRÚC SAU ĐÂY:\n"
+                f"{schema_str}"
             )
             
             model = genai.GenerativeModel(
                 self.model_name,
                 system_instruction=enforced_prompt,
             )
+            
+            # Đã xóa "response_schema" khỏi generation_config, chỉ giữ lại mime_type JSON
             response = model.generate_content(
                 json.dumps(master_payload, ensure_ascii=False, default=str),
                 generation_config={
                     "response_mime_type": "application/json",
-                    "response_schema": A1Output,
                     "temperature": 0.9,
                 },
             )
+            
+            # Pydantic sẽ chịu trách nhiệm kiểm tra cấu trúc thay cho SDK
             data = json.loads(response.text)
             validated = A1Output(**data)
             logger.info(
@@ -61,6 +64,7 @@ class A1Alchemist:
                 f"Creativity scores: {[d.creativity_score for d in validated.drafts]}"
             )
             return validated.model_dump()["drafts"]
+            
         except json.JSONDecodeError as e:
             logger.error(f"[A1] JSON parse loi: {e}")
             GEMINI_POOL.mark_failed(key)
@@ -71,11 +75,7 @@ class A1Alchemist:
             return self.generate_3_drafts(master_payload, _attempt + 1)
 
     def generate_3_drafts_with_warning(self, master_payload: dict, warning: str, _attempt: int = 0) -> list:
-        """Sinh 3 ban nhap voi canh bao dac biet tu Auditor (Va loi Retry).
-        
-        Ep nhiet do (temperature) len 1.0 va tiem canh bao vao system_prompt
-        de LLM bat buoc phai sang tao mot huong di hoan toan khac.
-        """
+        """Sinh 3 ban nhap voi canh bao dac biet tu Auditor."""
         import google.generativeai as genai
 
         max_attempts = GEMINI_POOL.active_count + 1
@@ -92,12 +92,14 @@ class A1Alchemist:
         try:
             genai.configure(api_key=key)
             
-            # Tiem canh bao vao thang system instruction
+            schema_str = json.dumps(A1Output.model_json_schema(), ensure_ascii=False, indent=2)
             dynamic_system_prompt = (
                 A1_SYSTEM_PROMPT + 
                 f"\n\n[WARNING FROM AUDITOR - BAT BUOC PHAI DOC]\n{warning}\n"
                 f"YEU CAU: Hay sang tao mot huong di, cot truyen hoan toan khac biet so voi ban truoc do!\n"
-                f"[QUAN TRỌNG] BẮT BUỘC TRẢ VỀ CHÍNH XÁC 3 BẢN NHÁP (DRAFTS)."
+                f"[QUAN TRỌNG] BẮT BUỘC TRẢ VỀ CHÍNH XÁC 3 BẢN NHÁP (DRAFTS).\n"
+                "BẠN BẮT BUỘC PHẢI TRẢ VỀ DỮ LIỆU JSON TUÂN THỦ NGHIÊM NGẶT CẤU TRÚC SAU ĐÂY:\n"
+                f"{schema_str}"
             )
             
             model = genai.GenerativeModel(
@@ -109,10 +111,10 @@ class A1Alchemist:
                 json.dumps(master_payload, ensure_ascii=False, default=str),
                 generation_config={
                     "response_mime_type": "application/json",
-                    "response_schema": A1Output,
-                    "temperature": 1.0,  # Tang nhiet do toi da de ep thoat khoi loi mon
+                    "temperature": 1.0, 
                 },
             )
+            
             data = json.loads(response.text)
             validated = A1Output(**data)
             logger.info(
@@ -120,6 +122,7 @@ class A1Alchemist:
                 f"Creativity scores: {[d.creativity_score for d in validated.drafts]}"
             )
             return validated.model_dump()["drafts"]
+            
         except json.JSONDecodeError as e:
             logger.error(f"[A1] JSON parse loi (khi xu ly warning): {e}")
             GEMINI_POOL.mark_failed(key)
