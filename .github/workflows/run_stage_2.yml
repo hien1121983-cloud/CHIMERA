@@ -17,6 +17,12 @@ jobs:
         with:
           python-version: "3.11"
           cache: 'pip'
+          
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pymongo pydantic pydantic-settings python-dotenv requests feedparser aiohttp python-telegram-bot google-generativeai groq fastapi uvicorn
+          
 
       - name: Install Dependencies
         run: |
