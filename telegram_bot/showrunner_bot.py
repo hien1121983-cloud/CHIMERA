@@ -33,6 +33,9 @@ async def telegram_webhook(request: Request):
     """Render nhận tín hiệu từ Telegram và lưu vào MongoDB."""
     try:
         update = await request.json()
+        bot = _get_bot()
+        
+        # 1. Xử lý nút bấm (Callback Query)
         callback = update.get("callback_query")
         if callback:
             data = callback.get("data")
@@ -46,12 +49,30 @@ async def telegram_webhook(request: Request):
                 upsert=True
             )
             
-            # Gửi thông báo mờ (toast) phản hồi lại cho user trên app Telegram
-            bot = _get_bot()
+            # Phản hồi lại cho user trên app Telegram
             await bot.answer_callback_query(
                 callback_query_id=callback["id"], 
                 text=f"Đã ghi nhận lệnh: {data}"
             )
+            return {"ok": True}
+            
+        # 2. Xử lý tin nhắn văn bản (như /start, /status)
+        message = update.get("message")
+        if message and message.get("text"):
+            text = message.get("text")
+            chat_id = message.get("chat", {}).get("id")
+            
+            if text.startswith("/start"):
+                await bot.send_message(
+                    chat_id=chat_id, 
+                    text="👋 Hệ thống CHIMERA Webhook (Render) đã kết nối thành công!\n\nBạn hãy bấm Run Workflow Bản 2 trên GitHub Actions, tôi đang chờ nhận kịch bản ở đây."
+                )
+            elif text.startswith("/status"):
+                await bot.send_message(
+                    chat_id=chat_id, 
+                    text="🟢 Máy chủ Render đang trực tuyến và lắng nghe 24/7."
+                )
+                
     except Exception as e:
         logger.error(f"[Webhook] Loi: {e}")
         
@@ -60,6 +81,10 @@ async def telegram_webhook(request: Request):
 @app.get("/health")
 async def health():
     return {"status": "ok"}
+
+@app.get("/")
+async def root():
+    return {"message": "Chimera Webhook Server is running!"}
 
 # =====================================================================
 # PHẦN 2: DÀNH CHO GITHUB ACTIONS (PIPELINE WORKER)
