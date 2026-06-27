@@ -3,8 +3,8 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-VALID_DECISIONS = {"APPROVE", "REJECT", "REWRITE_EXTREME"}
-
+# Thay doi quyet dinh de chap nhan 1 trong 3 ban
+VALID_DECISIONS = {"APPROVE_0", "APPROVE_1", "APPROVE_2", "REJECT", "REWRITE_EXTREME"}
 
 def parse_callback(callback_data: str) -> str:
     """Chuan hoa callback data thanh quyet dinh hop le."""
