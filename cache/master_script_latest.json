@@ -1,0 +1,38 @@
+{
+  "meta": {
+    "pipeline_version": "5.0.1",
+    "episode_number": 999,
+    "similarity_score": 0.0,
+    "approved": true
+  },
+  "script": {
+    "title": "Tập Test Media",
+    "synopsis": "Kịch bản rút gọn để test FFmpeg và Audio",
+    "creativity_score": 0.9,
+    "scenes": [
+      {
+        "scene_id": "S01",
+        "location_name": "Khu phế tích",
+        "characters_present": ["Kael"],
+        "action": "Kael đứng nhìn bầu trời.",
+        "visual_prompt_en": "Vertical 9:16, dark fantasy anime style, a young man standing in ruins, looking at the sky, masterpiece",
+        "camera_angle": "medium_shot",
+        "bgm_mood": "epic",
+        "dialogues": [
+          {
+            "character": "Kael",
+            "voice_id": "premade/Adam",
+            "emotion": "neutral",
+            "line": "Hệ thống media đã kích hoạt. Quá trình kết xuất video bắt đầu."
+          }
+        ]
+      }
+    ]
+  },
+  "voice_mapping": {
+    "Kael": "premade/Adam"
+  },
+  "resolved_hooks": [],
+  "world_state_deltas": []
+}
+
