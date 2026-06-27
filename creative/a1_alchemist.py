@@ -35,9 +35,16 @@ class A1Alchemist:
 
         try:
             genai.configure(api_key=key)
+            
+            # FIX LỖI maxItems: Ép Gemini sinh đúng 3 drafts thông qua Prompt thay vì Schema
+            enforced_prompt = (
+                A1_SYSTEM_PROMPT + 
+                "\n\n[QUAN TRỌNG] BẮT BUỘC TRẢ VỀ CHÍNH XÁC 3 BẢN NHÁP (DRAFTS) TRONG MẢNG. KHÔNG ĐƯỢC NHIỀU HƠN HOẶC ÍT HƠN."
+            )
+            
             model = genai.GenerativeModel(
                 self.model_name,
-                system_instruction=A1_SYSTEM_PROMPT,
+                system_instruction=enforced_prompt,
             )
             response = model.generate_content(
                 json.dumps(master_payload, ensure_ascii=False, default=str),
@@ -89,7 +96,8 @@ class A1Alchemist:
             dynamic_system_prompt = (
                 A1_SYSTEM_PROMPT + 
                 f"\n\n[WARNING FROM AUDITOR - BAT BUOC PHAI DOC]\n{warning}\n"
-                f"YEU CAU: Hay sang tao mot huong di, cot truyen hoan toan khac biet so voi ban truoc do!"
+                f"YEU CAU: Hay sang tao mot huong di, cot truyen hoan toan khac biet so voi ban truoc do!\n"
+                f"[QUAN TRỌNG] BẮT BUỘC TRẢ VỀ CHÍNH XÁC 3 BẢN NHÁP (DRAFTS)."
             )
             
             model = genai.GenerativeModel(
@@ -120,4 +128,3 @@ class A1Alchemist:
             logger.error(f"[A1] Loi goi Gemini (khi xu ly warning): {e}")
             GEMINI_POOL.mark_failed(key)
             return self.generate_3_drafts_with_warning(master_payload, warning, _attempt + 1)
-            
