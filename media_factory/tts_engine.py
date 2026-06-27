@@ -23,12 +23,23 @@ class TTSEngine:
             return False
         try:
             from elevenlabs.client import ElevenLabs
-
             client = ElevenLabs(api_key=key)
-            audio = client.generate(text=text, voice=voice_id)
+
+            # Modern ElevenLabs SDK v1.0+ syntax
+            # Loại bỏ tiền tố "premade/" nếu có
+            actual_voice = voice_id.replace("premade/", "") if "premade/" in voice_id else voice_id
+            
+            generator = client.text_to_speech.convert(
+                text=text,
+                voice_id=actual_voice,
+                model_id="eleven_multilingual_v2",
+                output_format="mp3_44100_128"
+            )
+            
             with open(output_path, "wb") as f:
-                for chunk in audio:
-                    f.write(chunk)
+                for chunk in generator:
+                    if chunk:
+                        f.write(chunk)
             return True
         except Exception as e:
             logger.error(f"[TTS] ElevenLabs loi: {e}")
@@ -38,7 +49,7 @@ class TTSEngine:
     async def _try_edge_tts(self, text: str, output_path: str) -> bool:
         try:
             import edge_tts
-
+            # Giọng nam tiếng Việt chuẩn của Microsoft
             communicate = edge_tts.Communicate(text, "vi-VN-NamMinhNeural")
             await communicate.save(output_path)
             return True
