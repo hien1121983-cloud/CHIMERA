@@ -4,7 +4,7 @@ import logging
 
 from core.credential_manager import GROQ_POOL
 from dispatcher.visual_lock import VisualLockManager
-from dispatcher.prompt_translator import enrich_visual_prompt
+from dispatcher.prompt_translator import enrich_visual_prompt, build_scene_prompt
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +15,10 @@ Nhiem vu: Chuyen hoa Master_Script.json thanh Execution.json chi tiet.
 NGUYEN TAC BAT BUOC:
 1. KHONG them/bot/sua doi bat ky noi dung sang tao nao tu Master_Script.
 2. Voi moi dialogue, uoc tinh thoi luong (ms) = so tu tieng Viet x 180ms.
-3. Voi moi scene, giu nguyen visual_prompt_en va visual_lock_seed.
+3. Voi moi scene, GIU NGUYEN TUYET DOI visual_prompt_en va visual_lock_seed
+   dung y nhu ban nhan duoc trong input - day la prompt da duoc ghep san
+   tu prompt khoa nhan vat (A0) + prompt canh (A1), TUYET DOI KHONG viet
+   lai, dien giai lai, hay rut gon noi dung nay.
 4. Xuat ra JSON dung schema ExecutionSchema.
 5. Neu Master_Script co 15 scenes, output BAT BUOC co dung 15 scenes.
 
@@ -90,18 +93,45 @@ class A2Dispatcher:
             return self.decompose_script(master_script, _attempt + 1)
 
     def _inject_visual_lock(self, master_script: dict) -> dict:
-        """Inject visual_lock_seed vao moi scene truoc khi gui Groq."""
+        """Inject visual_lock_seed + ghep prompt nhan vat khoa vao moi scene
+        truoc khi gui Groq.
+
+        Voi moi scene:
+        1. Xac dinh characters_present tu danh sach dialogues.
+        2. Voi MOI nhan vat co mat, tra cuu visual_prompt_en DA KHOA (A0)
+           qua VisualLockManager.get_visual_prompt_for_character().
+        3. Enrich prompt canh goc (tu A1) voi hau to ky thuat (9:16, cinematic...).
+        4. Ghep tat ca thanh 1 prompt hoan chinh theo dinh dang:
+           "Character A: <mo ta>; Character B: <mo ta>; Scene: <mo ta canh>"
+           va GHI DE truc tiep vao scene["visual_prompt_en"].
+
+        Day la buoc bat buoc de dam bao nhan vat giu nguyen ngoai hinh da
+        khoa giua cac scene khi Pollinations ve anh - neu thieu, ImageGenerator
+        chi nhan duoc prompt canh chung do A1 tu bia, khong he biet nhan vat
+        trong canh do trong nhu the nao.
+        """
         import copy
 
         enriched = copy.deepcopy(master_script)
         scenes = enriched.get("script", {}).get("scenes", [])
         for scene in scenes:
             chars = [d.get("character") for d in scene.get("dialogues", []) if d.get("character")]
-            scene["characters_present"] = list(dict.fromkeys(chars))
+            characters_present = list(dict.fromkeys(chars))
+            scene["characters_present"] = characters_present
             scene["visual_lock_seed"] = self.visual_lock.get_scene_seed(
-                scene["characters_present"]
+                characters_present
             )
-            scene["visual_prompt_en"] = enrich_visual_prompt(
+
+            # Tra cuu prompt khoa cho TAT CA nhan vat co mat (giu thu tu xuat hien)
+            character_prompts = {
+                name: self.visual_lock.get_visual_prompt_for_character(name)
+                for name in characters_present
+            }
+
+            scene_prompt_enriched = enrich_visual_prompt(
                 scene.get("visual_prompt_en", "")
+            )
+            scene["visual_prompt_en"] = build_scene_prompt(
+                character_prompts, scene_prompt_enriched
             )
         return enriched
