@@ -94,7 +94,7 @@ def launch_webhook_in_background(host: str = "0.0.0.0", port: int = 8443):
     logger.info("[ShowrunnerBot] Bỏ qua local webhook vì đã triển khai trên Render.")
     return None
 
-async def send_approval_request(text: str, video_summary: dict = None):
+async def send_approval_request(text: str, document_path: str = None):
     """GitHub Actions gửi tin nhắn báo cáo lên Telegram."""
     # Reset trạng thái DB trước khi gửi
     db = ChimeraDB()
@@ -105,25 +105,38 @@ async def send_approval_request(text: str, video_summary: dict = None):
     )
 
     bot = _get_bot()
+    # Giao dien ban phim moi: 3 lua chon draft o hang 1
     keyboard = InlineKeyboardMarkup([
         [
-            InlineKeyboardButton("DUYỆT & RENDER", callback_data="APPROVE"),
-            InlineKeyboardButton("TỪ CHỐI", callback_data="REJECT"),
+            InlineKeyboardButton("CHỌN BẢN 1", callback_data="APPROVE_0"),
+            InlineKeyboardButton("CHỌN BẢN 2", callback_data="APPROVE_1"),
+            InlineKeyboardButton("CHỌN BẢN 3", callback_data="APPROVE_2"),
         ],
         [
-            InlineKeyboardButton(
-                "VIẾT LẠI (Bơm nội tâm cực đoan)",
-                callback_data="REWRITE_EXTREME",
-            )
+            InlineKeyboardButton("TỪ CHỐI", callback_data="REJECT"),
+            InlineKeyboardButton("VIẾT LẠI (Cực đoan)", callback_data="REWRITE_EXTREME"),
         ],
     ])
 
-    await bot.send_message(
-        chat_id=os.getenv("TELEGRAM_CHAT_ID"),
-        text=text,
-        parse_mode="HTML",
-        reply_markup=keyboard,
-    )
+    if document_path and os.path.exists(document_path):
+        # Gui file dinh kem
+        with open(document_path, "rb") as doc:
+            await bot.send_document(
+                chat_id=os.getenv("TELEGRAM_CHAT_ID"),
+                document=doc,
+                caption=text,
+                parse_mode="HTML",
+                reply_markup=keyboard,
+        )
+    else:
+        # Gui tin nhan thong thuong neu khong co file
+        await bot.send_message(
+            chat_id=os.getenv("TELEGRAM_CHAT_ID"),
+            text=text,
+            parse_mode="HTML",
+            reply_markup=keyboard,
+        )
+
 
 async def wait_for_showrunner(timeout: float = None) -> str:
     """GitHub Actions liên tục kiểm tra MongoDB xem Render đã nhận lệnh chưa."""
