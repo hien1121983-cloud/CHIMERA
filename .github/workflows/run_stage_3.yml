@@ -1,0 +1,32 @@
+name: STAGE 3 MEDIA PIPELINE
+
+on:
+  workflow_dispatch:
+
+jobs:
+  run-stage-3:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install FFmpeg (Bắt buộc cho Render)
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
+      - name: Install Python Dependencies
+        run: |
+          pip install --upgrade pip
+          pip install requests pydantic aiohttp elevenlabs moviepy Pillow
+
+      - name: Run Stage 3
+        # Nhớ cấu hình đủ API Key của T5/ElevenLabs ở đây
+        env:
+          ELEVENLABS_KEY_1: ${{ secrets.ELEVENLABS_KEY1 }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python main_media_pipeline.py
+
