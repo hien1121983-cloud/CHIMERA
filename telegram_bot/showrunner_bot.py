@@ -1,97 +1,97 @@
-"""FastAPI webhook + asyncio.Event de cho Showrunner duyet (Va M-07)."""
+"""FastAPI Webhook Server kết nối đa máy chủ qua MongoDB."""
 import os
 import asyncio
 import logging
-import threading
 from contextlib import asynccontextmanager
 
 import uvicorn
 from fastapi import FastAPI, Request
+import telegram
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
+from core.db_client import ChimeraDB
 from config.settings import settings
 
 logger = logging.getLogger(__name__)
 
-# === Trang thai cho duyet (cung event loop) ===
-_approval_event = asyncio.Event()
-_approval_decision = None
-
-
 def _get_bot():
-    import telegram
-
     return telegram.Bot(token=os.getenv("TELEGRAM_BOT_TOKEN"))
-
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    logger.info("[ShowrunnerBot] Khoi dong webhook server")
+    logger.info("[ShowrunnerBot] Khoi dong Webhook Server tren Cloud")
     yield
-    logger.info("[ShowrunnerBot] Dung webhook server")
-
+    logger.info("[ShowrunnerBot] Dung Webhook Server")
 
 app = FastAPI(title="Chimera Showrunner Bot", lifespan=lifespan)
 
-
+# =====================================================================
+# PHẦN 1: DÀNH CHO RENDER (WEBHOOK SERVER)
+# =====================================================================
 @app.post("/webhook/telegram")
 async def telegram_webhook(request: Request):
-    global _approval_decision
-    update = await request.json()
-
-    callback = update.get("callback_query")
-    if callback:
-        data = callback.get("data")
-        logger.info(f"[ShowrunnerBot] Nhan callback: {data}")
-        _approval_decision = data
-        _approval_event.set()
+    """Render nhận tín hiệu từ Telegram và lưu vào MongoDB."""
+    try:
+        update = await request.json()
+        callback = update.get("callback_query")
+        if callback:
+            data = callback.get("data")
+            logger.info(f"[ShowrunnerBot] Render nhan callback tu Telegram: {data}")
+            
+            # Lưu quyết định vào DB để GitHub Actions có thể đọc được
+            db = ChimeraDB()
+            db.permanent.system_state.update_one(
+                {"_id": "latest_approval"},
+                {"$set": {"decision": data, "status": "pending"}},
+                upsert=True
+            )
+            
+            # Gửi thông báo mờ (toast) phản hồi lại cho user trên app Telegram
+            bot = _get_bot()
+            await bot.answer_callback_query(
+                callback_query_id=callback["id"], 
+                text=f"Đã ghi nhận lệnh: {data}"
+            )
+    except Exception as e:
+        logger.error(f"[Webhook] Loi: {e}")
+        
     return {"ok": True}
-
 
 @app.get("/health")
 async def health():
     return {"status": "ok"}
 
-
-def start_webhook_server(host: str = "0.0.0.0", port: int = 8443):
-    """Chay FastAPI trong thread rieng."""
-    config = uvicorn.Config(app, host=host, port=port, log_level="warning")
-    server = uvicorn.Server(config)
-    server.run()
-
-
+# =====================================================================
+# PHẦN 2: DÀNH CHO GITHUB ACTIONS (PIPELINE WORKER)
+# =====================================================================
 def launch_webhook_in_background(host: str = "0.0.0.0", port: int = 8443):
-    thread = threading.Thread(
-        target=start_webhook_server, args=(host, port), daemon=True
-    )
-    thread.start()
-    logger.info(f"[ShowrunnerBot] Webhook server chay nen tai {host}:{port}")
-    return thread
-
+    """Giữ nguyên tên hàm để main_creative_pipeline.py không bị lỗi ImportError."""
+    logger.info("[ShowrunnerBot] Bỏ qua local webhook vì đã triển khai trên Render.")
+    return None
 
 async def send_approval_request(text: str, video_summary: dict = None):
-    """Gui yeu cau duyet kem inline keyboard."""
-    global _approval_decision
-    import telegram
-    from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+    """GitHub Actions gửi tin nhắn báo cáo lên Telegram."""
+    # Reset trạng thái DB trước khi gửi
+    db = ChimeraDB()
+    db.permanent.system_state.update_one(
+        {"_id": "latest_approval"},
+        {"$set": {"decision": None, "status": "waiting"}},
+        upsert=True
+    )
 
     bot = _get_bot()
     keyboard = InlineKeyboardMarkup([
         [
-            InlineKeyboardButton("DUYET & RENDER", callback_data="APPROVE"),
-            InlineKeyboardButton("TU CHOI", callback_data="REJECT"),
+            InlineKeyboardButton("DUYỆT & RENDER", callback_data="APPROVE"),
+            InlineKeyboardButton("TỪ CHỐI", callback_data="REJECT"),
         ],
         [
             InlineKeyboardButton(
-                "VIET LAI (Bom noi tam cuc doan)",
+                "VIẾT LẠI (Bơm nội tâm cực đoan)",
                 callback_data="REWRITE_EXTREME",
             )
         ],
     ])
-    # FIX #2: Reset ca event lan decision truoc khi gui yeu cau moi.
-    # Truoc day chi clear event nhung _approval_decision van giu gia tri cu,
-    # neu webhook duoc goi truoc wait() thi gia tri cu se duoc tra ve.
-    _approval_decision = None
-    _approval_event.clear()
 
     await bot.send_message(
         chat_id=os.getenv("TELEGRAM_CHAT_ID"),
@@ -100,36 +100,32 @@ async def send_approval_request(text: str, video_summary: dict = None):
         reply_markup=keyboard,
     )
 
-
 async def wait_for_showrunner(timeout: float = None) -> str:
-    """Ngu cho den khi Showrunner bam nut.
-
-    FIX #2: Truoc day timeout=None -> pipeline treo vinh vien neu Showrunner
-    khong phan hoi. Nay dung settings.SHOWRUNNER_TIMEOUT_HOURS lam default.
-    Caller co the override bang tham so timeout (tinh bang giay).
-    """
-    global _approval_decision
-
+    """GitHub Actions liên tục kiểm tra MongoDB xem Render đã nhận lệnh chưa."""
     effective_timeout = timeout if timeout is not None else (settings.SHOWRUNNER_TIMEOUT_HOURS * 3600)
+    logger.info(f"[ShowrunnerBot] Cho Render xac nhan (poll DB, timeout={effective_timeout/3600:.1f}h)...")
 
-    logger.info(
-        f"[ShowrunnerBot] Cho Showrunner duyet "
-        f"(timeout={effective_timeout / 3600:.1f}h)..."
-    )
+    db = ChimeraDB()
+    start_time = asyncio.get_event_loop().time()
 
-    try:
-        await asyncio.wait_for(_approval_event.wait(), timeout=effective_timeout)
-    except asyncio.TimeoutError:
-        logger.critical(
-            f"[ShowrunnerBot] Showrunner khong phan hoi trong "
-            f"{settings.SHOWRUNNER_TIMEOUT_HOURS:.1f} gio. "
-            f"Pipeline bi huy tu dong."
-        )
-        raise TimeoutError(
-            f"Showrunner timeout sau {settings.SHOWRUNNER_TIMEOUT_HOURS:.1f} gio. "
-            f"Kiem tra Telegram bot va thu lai."
-        )
+    while True:
+        current_time = asyncio.get_event_loop().time()
+        if current_time - start_time > effective_timeout:
+            logger.critical("[ShowrunnerBot] Timeout cho duyet.")
+            raise TimeoutError("Showrunner timeout.")
 
-    decision = _approval_decision
-    logger.info(f"[ShowrunnerBot] Showrunner da quyet dinh: {decision}")
-    return decision
+        # Đọc Database xem có lệnh mới từ Render không
+        record = db.permanent.system_state.find_one({"_id": "latest_approval"})
+        if record and record.get("decision") and record.get("status") == "pending":
+            decision = record["decision"]
+            
+            # Đánh dấu đã xử lý xong
+            db.permanent.system_state.update_one(
+                {"_id": "latest_approval"},
+                {"$set": {"status": "processed"}}
+            )
+            
+            logger.info(f"[ShowrunnerBot] Da bat duoc tin hieu tu Render: {decision}")
+            return decision
+
+        await asyncio.sleep(5)  # Chờ 5 giây rồi kiểm tra lại DB
