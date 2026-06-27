@@ -11,20 +11,18 @@ logger = logging.getLogger(__name__)
 class A0VisualOutput(BaseModel):
     visual_prompt_en: str = Field(
         description="Miêu tả ngoại hình nhân vật bằng tiếng Anh (dành cho AI tạo ảnh). "
-                    "Tối đa 30 từ. Chỉ tập trung vào khuôn mặt, kiểu tóc, và trang phục đặc trưng."
+                    "Tối đa 30 từ. Chỉ tập trung vào khuôn mặt, độ tuổi, kiểu tóc, và trang phục đặc trưng."
     )
 
 class A0CharacterArtist:
-    """Trạm A0: Vẽ ngoại hình cho các nhân vật chưa có hình ảnh."""
     
     def __init__(self):
         self.db = ChimeraDB()
         self.model_name = "gemini-2.5-flash"
 
     def process_payload_characters(self, master_payload: dict) -> dict:
-        """Duyệt qua payload, tìm nhân vật chưa có hình, gọi LLM vẽ và lưu DB bằng Python thuần."""
+        """Duyệt payload, tìm nhân vật chưa có hình, gọi LLM vẽ và lưu DB."""
         
-        # 1. Thu thập toàn bộ nhân vật từ Payload
         characters = []
         if "protagonists" in master_payload:
             characters.extend(master_payload["protagonists"])
@@ -39,7 +37,6 @@ class A0CharacterArtist:
             elif isinstance(states, list):
                 characters.extend(states)
                 
-        # 2. Lọc unique và kiểm tra khóa
         unique_chars = {}
         for c in characters:
             if not isinstance(c, dict): continue
@@ -47,10 +44,9 @@ class A0CharacterArtist:
             if cid:
                 unique_chars[cid] = c
                 
-        # 3. Tiến hành vẽ và khóa
         for char_id, char_data in unique_chars.items():
             if not char_data.get("visual_locked", False) or not char_data.get("visual_prompt_en"):
-                logger.info(f"[A0] Phat hien '{char_data.get('name')}' chua co ngoai hinh. Bat dau ve...")
+                logger.info(f"[A0] Phát hiện '{char_data.get('name')}' chưa có ngoại hình. Bắt đầu cấp phát...")
                 self._draw_and_lock_character(char_id, char_data)
                 
         return master_payload
@@ -60,7 +56,7 @@ class A0CharacterArtist:
         
         max_attempts = GEMINI_POOL.active_count + 1
         if _attempt >= max_attempts:
-            logger.error(f"[A0] That bai khi ve nhan vat {char_id}. Dung Fallback.")
+            logger.error(f"[A0] Thất bại khi vẽ nhân vật {char_id}. Dùng Fallback.")
             fallback_prompt = f"A cinematic portrait of a Vietnamese character named {char_data.get('name', 'Unknown')}, highly detailed, 8k"
             self._save_to_db(char_id, char_data, fallback_prompt)
             return
@@ -79,12 +75,13 @@ class A0CharacterArtist:
                 f"- Tên: {char_data.get('name', 'Unknown')}\n"
                 f"- Vai trò: {char_data.get('role', 'Unknown')}\n"
                 f"- Tính cách: {', '.join(char_data.get('traits', []))}\n"
-                f"YÊU CẦU: Trả về JSON chứa 'visual_prompt_en' theo cấu trúc:\n{schema_str}"
+                f"YÊU CẦU: Trả về JSON thuần túy chứa 'visual_prompt_en'.\n"
+                f"CẤU TRÚC JSON:\n{schema_str}"
             )
             
             model = genai.GenerativeModel(
                 self.model_name,
-                system_instruction="Chỉ trả về JSON thuần túy.",
+                system_instruction="Chỉ trả về JSON thuần túy, không định dạng markdown.",
             )
             
             response = model.generate_content(
@@ -95,25 +92,24 @@ class A0CharacterArtist:
             data = json.loads(response.text)
             visual_prompt = A0VisualOutput(**data).visual_prompt_en
             
-            # CHỐT CHẶT: GHI VÀO MONGODB BẰNG PYTHON THUẦN
+            # Ghi vào MongoDB bằng Python thuần
             self._save_to_db(char_id, char_data, visual_prompt)
             
         except Exception as e:
-            logger.error(f"[A0] Loi LLM khi ve nhan vat {char_id}: {e}")
+            logger.error(f"[A0] Lỗi LLM khi vẽ nhân vật {char_id}: {e}")
             GEMINI_POOL.mark_failed(key)
             self._draw_and_lock_character(char_id, char_data, _attempt + 1)
             
     def _save_to_db(self, char_id: str, char_data: dict, visual_prompt: str):
         try:
-            # Lưu vĩnh viễn vào Database
             update_query = {"$set": {"visual_prompt_en": visual_prompt, "visual_locked": True}}
-            self.db.permanent.character_profiles.update_one({"character_id": char_id}, update_query)
+            # Lưu vào Database
             self.db.permanent.character_states.update_one({"character_id": char_id}, update_query)
             
             # Cập nhật trực tiếp vào payload in-memory để A1 xài luôn
             char_data["visual_prompt_en"] = visual_prompt
             char_data["visual_locked"] = True
             
-            logger.info(f"[A0] KHÓA THÀNH CÔNG ngoại hình cho '{char_data.get('name')}'")
+            logger.info(f"[A0] KHÓA THÀNH CÔNG ngoại hình cho '{char_data.get('name')}'.")
         except Exception as e:
-            logger.error(f"[A0] Loi ghi MongoDB: {e}")
+            logger.error(f"[A0] Lỗi ghi MongoDB: {e}")
