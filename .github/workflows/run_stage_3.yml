@@ -6,7 +6,7 @@ on:
 jobs:
   run-full-pipeline:
     runs-on: ubuntu-22.04
-    timeout-minutes: 45 # Tăng thời gian vì chạy cả kịch bản lẫn render
+    timeout-minutes: 45
 
     steps:
       - name: Checkout Code
@@ -31,6 +31,7 @@ jobs:
           MONGODB_URI_PERMANENT: ${{ secrets.MONGODB_URL_NO1 }}
           MONGODB_URI_PURGATORY: ${{ secrets.MONGODB_URL_NO2 }}
           MONGODB_URI_CANON: ${{ secrets.MONGODB_URL_NO3 }}
+          
           GEMINI_KEY_1: ${{ secrets.GEMINI_API_KEY1 }}
           GEMINI_KEY_2: ${{ secrets.GEMINI_API_KEY2 }}
           GEMINI_KEY_3: ${{ secrets.GEMINI_API_KEY3 }}
@@ -38,29 +39,55 @@ jobs:
           GEMINI_KEY_5: ${{ secrets.GEMINI_API_KEY5 }}
           GEMINI_KEY_6: ${{ secrets.GEMINI_API_KEY6 }}
           GEMINI_KEY_7: ${{ secrets.GEMINI_API_KEY7 }}
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: |
-          # Chạy Bản 2, file master_script_latest.json sẽ được tạo ra tại cache/
-          python main_creative_pipeline.py
-
-      - name: Run Stage 3 (Xưởng Media)
-        # Chỉ chạy Bản 3 nếu Bản 2 chạy thành công và kịch bản được duyệt
-        if: success()
-        env:
-          MONGODB_URI_PERMANENT: ${{ secrets.MONGODB_URL_NO1 }}
+          
           GROQ_KEY_1: ${{ secrets.GROQ_API_KEY1 }}
           GROQ_KEY_2: ${{ secrets.GROQ_API_KEY2 }}
           GROQ_KEY_3: ${{ secrets.GROQ_API_KEY3 }}
           GROQ_KEY_4: ${{ secrets.GROQ_API_KEY4 }}
           GROQ_KEY_5: ${{ secrets.GROQ_API_KEY5 }}
           GROQ_KEY_6: ${{ secrets.GROQ_API_KEY6 }}
+          
           ELEVENLABS_KEY_1: ${{ secrets.ELEVENLABS_KEY1 }}
           ELEVENLABS_KEY_2: ${{ secrets.ELEVENLABS_KEY2 }}
           ELEVENLABS_KEY_3: ${{ secrets.ELEVENLABS_KEY3 }}
           ELEVENLABS_KEY_4: ${{ secrets.ELEVENLABS_KEY4 }}
           ELEVENLABS_KEY_5: ${{ secrets.ELEVENLABS_KEY5 }}
           ELEVENLABS_KEY_6: ${{ secrets.ELEVENLABS_KEY6 }}
+          
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          python main_creative_pipeline.py
+
+      - name: Run Stage 3 (Xưởng Media)
+        if: success()
+        env:
+          MONGODB_URI_PERMANENT: ${{ secrets.MONGODB_URL_NO1 }}
+          MONGODB_URI_PURGATORY: ${{ secrets.MONGODB_URL_NO2 }}
+          MONGODB_URI_CANON: ${{ secrets.MONGODB_URL_NO3 }}
+          
+          GEMINI_KEY_1: ${{ secrets.GEMINI_API_KEY1 }}
+          GEMINI_KEY_2: ${{ secrets.GEMINI_API_KEY2 }}
+          GEMINI_KEY_3: ${{ secrets.GEMINI_API_KEY3 }}
+          GEMINI_KEY_4: ${{ secrets.GEMINI_API_KEY4 }}
+          GEMINI_KEY_5: ${{ secrets.GEMINI_API_KEY5 }}
+          GEMINI_KEY_6: ${{ secrets.GEMINI_API_KEY6 }}
+          GEMINI_KEY_7: ${{ secrets.GEMINI_API_KEY7 }}
+          
+          GROQ_KEY_1: ${{ secrets.GROQ_API_KEY1 }}
+          GROQ_KEY_2: ${{ secrets.GROQ_API_KEY2 }}
+          GROQ_KEY_3: ${{ secrets.GROQ_API_KEY3 }}
+          GROQ_KEY_4: ${{ secrets.GROQ_API_KEY4 }}
+          GROQ_KEY_5: ${{ secrets.GROQ_API_KEY5 }}
+          GROQ_KEY_6: ${{ secrets.GROQ_API_KEY6 }}
+          
+          ELEVENLABS_KEY_1: ${{ secrets.ELEVENLABS_KEY1 }}
+          ELEVENLABS_KEY_2: ${{ secrets.ELEVENLABS_KEY2 }}
+          ELEVENLABS_KEY_3: ${{ secrets.ELEVENLABS_KEY3 }}
+          ELEVENLABS_KEY_4: ${{ secrets.ELEVENLABS_KEY4 }}
+          ELEVENLABS_KEY_5: ${{ secrets.ELEVENLABS_KEY5 }}
+          ELEVENLABS_KEY_6: ${{ secrets.ELEVENLABS_KEY6 }}
+          
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
