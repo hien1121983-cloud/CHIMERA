@@ -1,4 +1,4 @@
-"""Pydantic schemas cho A1 output."""
+"""Pydantic schemas cho A1 output (DA FIX LOI SCHEMA CUA GEMINI SDK)."""
 from typing import Dict, List
 
 from pydantic import BaseModel, Field
@@ -18,7 +18,10 @@ class Scene(BaseModel):
     dialogues: List[Dialogue] = Field(default_factory=list)
     bgm_mood: str = "neutral"
     camera_angle: str = "medium_shot"
-    creativity_score: float = Field(ge=0.0, le=1.0, default=0.5)
+    creativity_score: float = Field(
+        default=0.5, 
+        description="Điểm sáng tạo từ 0.0 đến 1.0"
+    )
 
 
 class Draft(BaseModel):
@@ -26,20 +29,21 @@ class Draft(BaseModel):
     synopsis: str = ""
     scenes: List[Scene] = Field(default_factory=list)
     creativity_score: float = Field(
-        ge=0.0, le=1.0, default=0.5,
-        description="TU DANH GIA: 0.0-0.3 an toan, 0.4-0.7 co bat ngo, 0.8-1.0 radically different",
+        default=0.5,
+        description="TỰ ĐÁNH GIÁ (từ 0.0 đến 1.0): 0.0-0.3 an toàn, 0.4-0.7 có bất ngờ, 0.8-1.0 radically different",
     )
     resolved_hooks: List[str] = Field(
         default_factory=list,
-        description="Danh sach hook_id da giai quyet (BAT BUOC bao gom tat ca mandatory_tasks)",
+        description="Danh sách hook_id đã giải quyết (BẮT BUỘC bao gồm tất cả mandatory_tasks)",
     )
     world_state_deltas: List[Dict] = Field(
         default_factory=list,
-        description="Danh sach thay doi trang thai the gioi sau tap nay",
+        description="Danh sách thay đổi trạng thái thế giới sau tập này",
     )
 
 
 class A1Output(BaseModel):
-    """Schema dau ra BAT BUOC cua A1."""
-    drafts: List[Draft] = Field(min_length=3, max_length=3)
-    metadata: Dict = Field(default_factory=dict)
+    drafts: List[Draft] = Field(
+        default_factory=list,
+        description="Danh sách chính xác 3 bản nháp (drafts). Không được ít hơn hoặc nhiều hơn 3.",
+    )
