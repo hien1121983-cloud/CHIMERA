@@ -6,7 +6,7 @@ on:
 jobs:
   run-stage-3:
     runs-on: ubuntu-22.04
-    timeout-minutes: 30 # Tăng thời gian vì render video khá lâu
+    timeout-minutes: 30
 
     steps:
       - name: Checkout Code
@@ -24,12 +24,10 @@ jobs:
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
-          # Cài toàn bộ thư viện lõi của Bản 2 + Thư viện Media của Bản 3
-          pip install pymongo pydantic pydantic-settings python-dotenv requests feedparser aiohttp python-telegram-bot google-generativeai groq fastapi uvicorn numpy sentence-transformers elevenlabs moviepy Pillow
+          pip install pymongo pydantic pydantic-settings python-dotenv requests feedparser aiohttp python-telegram-bot google-generativeai groq fastapi uvicorn numpy sentence-transformers elevenlabs==0.2.27 edge-tts moviepy Pillow
 
       - name: Run Media Pipeline
         env:
-          # Bê nguyên toàn bộ Database và API Keys từ Bản 2 sang
           MONGODB_URI_PERMANENT: ${{ secrets.MONGODB_URL_NO1 }}
           MONGODB_URI_PURGATORY: ${{ secrets.MONGODB_URL_NO2 }}
           MONGODB_URI_CANON: ${{ secrets.MONGODB_URL_NO3 }}
