@@ -37,7 +37,9 @@ class AudioMerger:
             ]
             result = subprocess.run(cmd, capture_output=True, text=True)
             if result.returncode != 0:
-                raise RuntimeError(f"[AudioMerger] FFmpeg loi: {result.stderr[:500]}")
+                # FIX: Lấy 1000 ký tự CUỐI CÙNG của log thay vì phần đầu để đọc đúng lỗi
+                error_msg = result.stderr[-1000:] if result.stderr else "Unknown FFmpeg error"
+                raise RuntimeError(f"[AudioMerger] FFmpeg loi:\n{error_msg}")
 
         logger.info(f"[AudioMerger] Ghep {len(audio_files)} files -> {output_path}")
         return output_path
