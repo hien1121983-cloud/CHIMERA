@@ -6,6 +6,10 @@ load_dotenv()
 
 
 class Settings(BaseSettings):
+    # Khi True → Stage 2 tự động chọn Bản 1 thay vì hỏi Showrunner thật.
+    # Đặt TEST_MODE=false trong .env trên production để kích hoạt Telegram approval.
+    TEST_MODE: bool = True
+
     LOCATION_COOLDOWN_EPISODES: int = 3
     SIMILARITY_THRESHOLD: float = 0.70
     # FIX #6: Nguong tuyet doi tu choi - neu similarity cao hon nay sau khi
