@@ -17,6 +17,7 @@ fastapi>=0.109.0
 uvicorn>=0.27.0
 
 # === Ban 3: Media & Render ===
+openai>=1.0.0
 groq>=0.4.0
 elevenlabs>=0.2.27
 edge-tts>=6.1.9
