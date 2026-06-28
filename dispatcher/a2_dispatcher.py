@@ -1,10 +1,8 @@
-"""Tram A2 (OpenRouter): boc tach Master_Script -> Execution.json."""
+"""Tram A2 (Gemini Uncensored): boc tach Master_Script -> Execution.json."""
 import json
 import logging
 
-# Van dung bien CLAUDE_POOL de do phai sua nhieu file, 
-# nhung tren GitHub Secrets ban da dan Key cua OpenRouter vao roi.
-from core.credential_manager import CLAUDE_POOL
+from core.credential_manager import GEMINI_POOL
 from dispatcher.visual_lock import VisualLockManager
 from dispatcher.prompt_translator import enrich_visual_prompt, build_scene_prompt
 
@@ -43,45 +41,53 @@ class A2Dispatcher:
     """Boc tach kich ban van hoc thanh lenh thuc thi ky thuat."""
 
     def __init__(self):
-        # Model Llama 3.3 70B cuc manh va MIEN PHI tren OpenRouter
-        self.model = "meta-llama/llama-3.3-70b-instruct:free"
+        self.model_name = "gemini-2.5-flash"
         self.visual_lock = VisualLockManager()
 
     def decompose_script(self, master_script: dict, _attempt: int = 0) -> dict:
-        from openai import OpenAI
+        import google.generativeai as genai
+        from google.generativeai.types import HarmCategory, HarmBlockThreshold
 
-        max_attempts = CLAUDE_POOL.active_count + 1
+        max_attempts = GEMINI_POOL.active_count + 1
         if _attempt >= max_attempts:
             raise RuntimeError(
-                f"[A2] Tat ca {CLAUDE_POOL.active_count} key da that bai "
+                f"[A2] Tat ca {GEMINI_POOL.active_count} Gemini key da that bai "
                 f"sau {_attempt} lan thu."
             )
 
-        key = CLAUDE_POOL.get_next()
+        key = GEMINI_POOL.get_next()
         if not key:
-            raise RuntimeError("[A2] Khong co key kha dung.")
+            raise RuntimeError("[A2] Khong co Gemini key kha dung.")
 
         try:
-            # Tro SDK cua OpenAI ve server cua OpenRouter
-            client = OpenAI(
-                base_url="https://openrouter.ai/api/v1",
-                api_key=key,
-            )
+            genai.configure(api_key=key)
             enriched_script = self._inject_visual_lock(master_script)
 
-            response = client.chat.completions.create(
-                model=self.model,
-                messages=[
-                    {"role": "system", "content": A2_SYSTEM_PROMPT},
-                    {"role": "user", "content": json.dumps(enriched_script, ensure_ascii=False)}
-                ],
-                response_format={"type": "json_object"},
-                temperature=0.1,
-                max_tokens=8000,
+            # TẮT TOÀN BỘ KIỂM DUYỆT CỦA GOOGLE (Uncensored Mode)
+            # Biến Gemini thành một con AI "dễ tính" nhất có thể
+            safety_settings = {
+                HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
+                HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
+                HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
+                HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
+            }
+
+            model = genai.GenerativeModel(
+                self.model_name,
+                system_instruction=A2_SYSTEM_PROMPT,
+            )
+
+            # Ép trả về chuẩn JSON không kèm văn bản thừa
+            response = model.generate_content(
+                json.dumps(enriched_script, ensure_ascii=False),
+                generation_config={
+                    "response_mime_type": "application/json",
+                    "temperature": 0.1,
+                },
+                safety_settings=safety_settings
             )
             
-            result_text = response.choices[0].message.content
-            result = json.loads(result_text)
+            result = json.loads(response.text)
 
             input_scenes = len(master_script.get("script", {}).get("scenes", []))
             output_scenes = len(result.get("scenes", []))
@@ -91,15 +97,15 @@ class A2Dispatcher:
                 )
                 raise ValueError("Scene count mismatch")
 
-            logger.info(f"[A2] Boc tach thanh cong {output_scenes} scenes voi OpenRouter")
+            logger.info(f"[A2] Boc tach thanh cong {output_scenes} scenes voi Gemini (Uncensored)")
             return result
         except json.JSONDecodeError as e:
-            logger.error(f"[A2] Loi parse JSON: {e}\nRaw output: {result_text[:200]}...")
-            CLAUDE_POOL.mark_failed(key)
+            logger.error(f"[A2] Loi parse JSON: {e}")
+            GEMINI_POOL.mark_failed(key)
             return self.decompose_script(master_script, _attempt + 1)
         except Exception as e:
             logger.error(f"[A2] Loi goi LLM: {e}")
-            CLAUDE_POOL.mark_failed(key)
+            GEMINI_POOL.mark_failed(key)
             return self.decompose_script(master_script, _attempt + 1)
 
     def _inject_visual_lock(self, master_script: dict) -> dict:
@@ -128,4 +134,3 @@ class A2Dispatcher:
                 character_prompts, scene_prompt_enriched
             )
         return enriched
-       
