@@ -120,17 +120,13 @@ async def run_stage_2(master_payload: dict) -> dict:
     if not drafts:
         raise RuntimeError("[Stage2] Không có drafts nào được tạo ra sau Audit.")
 
-    # BƯỚC 2: Map voice cho nhân vật
+    # BƯỚC 2: Map voice cho nhân vật (truyền full dict để VoiceMapper khớp archetype)
     voice_mapper = VoiceMapper()
     all_characters = (
         master_payload.get("protagonists", []) +
         master_payload.get("supporting_cast", [])
     )
-    char_names = [
-        c.get("name") for c in all_characters
-        if isinstance(c, dict) and c.get("name")
-    ]
-    voice_mapping = voice_mapper.build_mapping(char_names)
+    voice_mapping = voice_mapper.build_mapping(all_characters)
 
     # BƯỚC 3: Xuất file 3 bản nháp để đọc
     drafts_file = export_drafts_to_txt(drafts, "cache/all_drafts.txt")
@@ -153,29 +149,56 @@ async def run_stage_2(master_payload: dict) -> dict:
         for c in all_characters
     )
 
+    test_mode_notice = (
+        "⚠️ CHẾ ĐỘ AUTO-TEST: Tự động duyệt Bản 1 (TEST_MODE=True).\n"
+        if settings.TEST_MODE
+        else "✅ PRODUCTION: Vui lòng bấm nút bên dưới để duyệt kịch bản.\n"
+    )
     caption = (
         f"🎬 <b>Tập {master_payload.get('meta', {}).get('episode_number', '?')} "
         f"ĐÃ CÓ 3 BẢN NHÁP</b>\n"
         f"🎭 <b>Dàn nhân vật:</b> {cast_summary}\n"
         f"Trạng thái kiểm duyệt: {last_audit_result.get('status')}{audit_warning}\n"
-        f"⚠️ HỆ THỐNG Ở CHẾ ĐỘ AUTO-TEST: Tự động duyệt Bản 1.\n"
+        f"{test_mode_notice}"
         f"<b>World stats:</b> {json.dumps(stats, ensure_ascii=False)}"
     )
 
     await send_approval_request(caption, document_path=drafts_file)
 
-    # BƯỚC 5: [CHẾ ĐỘ TEST] Tự động chọn bản 1
-    logger.info("[Stage2] CHẾ ĐỘ TEST: Tự động chọn bản nháp số 1 (APPROVE_0).")
-    decision = "APPROVE_0"
+    # BƯỚC 5: Lấy quyết định — TEST_MODE tự động, Production hỏi Showrunner thật
+    post_handler = PostApprovalHandler()
+
+    if settings.TEST_MODE:
+        logger.info("[Stage2] TEST_MODE=True → Tự động chọn bản nháp số 1 (APPROVE_0).")
+        decision = "APPROVE_0"
+    else:
+        logger.info("[Stage2] Chờ Showrunner duyệt qua Telegram (poll MongoDB)...")
+        decision = await wait_for_showrunner()
+        logger.info(f"[Stage2] Showrunner quyết định: {decision}")
 
     # BƯỚC 6: Xử lý quyết định và đóng gói Kịch bản
-    post_handler = PostApprovalHandler()
     master_script = None
 
-    if decision.startswith("APPROVE_"):
+    if decision == "REJECT":
+        raise RuntimeError("[Stage2] Showrunner đã TỪ CHỐI toàn bộ kịch bản. Pipeline dừng.")
+
+    elif decision == "REWRITE_EXTREME":
+        logger.warning("[Stage2] Showrunner yêu cầu VIẾT LẠI (Cực đoan) — bơm nội tâm và dừng.")
+        updated_payload = post_handler.handle_rewrite_extreme(master_payload)
+        # Lưu payload đã escalate để lần chạy lại Stage 2 kế tiếp dùng
+        Path("cache").mkdir(exist_ok=True)
+        with open("cache/master_payload_latest.json", "w", encoding="utf-8") as f:
+            import json as _json
+            _json.dump(updated_payload, f, ensure_ascii=False, indent=2, default=str)
+        raise RuntimeError(
+            "[Stage2] REWRITE_EXTREME: Payload đã được bơm nội tâm cực đoan. "
+            "Chạy lại Stage 2 để sinh kịch bản mới."
+        )
+
+    elif decision.startswith("APPROVE_"):
         draft_idx = int(decision.split("_")[1])
         selected_draft = drafts[draft_idx]
-        logger.info(f"[Stage2] Hệ thống tự động CHỌN BẢN SỐ {draft_idx + 1}")
+        logger.info(f"[Stage2] {'Tự động' if settings.TEST_MODE else 'Showrunner'} CHỌN BẢN SỐ {draft_idx + 1}")
 
         master_script = {
             "meta": {
@@ -223,7 +246,7 @@ async def run_stage_2(master_payload: dict) -> dict:
         return master_script
 
     else:
-        raise RuntimeError("Không thể xử lý lệnh Auto-Test.")
+        raise RuntimeError(f"[Stage2] Lệnh không xác định từ Showrunner: '{decision}'")
 
 
 async def main():
