@@ -65,5 +65,5 @@ class APIKeyPool:
 
 # Khoi tao pool toan cuc
 GEMINI_POOL = APIKeyPool("GEMINI_KEY", total=7)
-GROQ_POOL = APIKeyPool("GROQ_KEY", total=6)
+CLAUDE_POOL = APIKeyPool("CLAUDE_KEY", total=6)
 ELEVENLABS_POOL = APIKeyPool("ELEVENLABS_KEY", total=6)
