@@ -115,7 +115,7 @@ jobs:
             aiohttp>=3.9.0 \
             python-telegram-bot>=20.7 \
             google-generativeai>=0.4.0 \
-            groq>=0.4.0 \
+            anthropic>=0.25.0
             elevenlabs>=0.2.27 \
             edge-tts>=6.1.9 \
             pydub>=0.25.1 \
