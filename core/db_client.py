@@ -56,6 +56,7 @@ class ChimeraDB:
         conn.execute("PRAGMA journal_mode=WAL")
         conn.execute("PRAGMA synchronous=NORMAL")
 
+        # Tao san mot so bang mac dinh
         tables = [
             "character_blueprints", "world_rules", "secret_items",
             "location_settings", "archetypes", "platform_rules",
@@ -105,14 +106,22 @@ class ChimeraDB:
     def _cache_to_sqlite(self, collection_name: str, data: list):
         """Ghi de cache SQLite (thread-safe voi write lock)."""
         try:
-            # FIX #5: Serialize tat ca write operations bang lock.
-            # Khong co lock, 2 thread dong thoi DELETE+INSERT vao cung 1 bang
-            # se gay "database is locked" hoac corruption.
             with self._sqlite_lock:
+                # Tu dong tao bang neu chua co (Giai quyet loi no such table)
+                self.sqlite_cache.execute(
+                    f"""
+                    CREATE TABLE IF NOT EXISTS {collection_name} (
+                        id TEXT PRIMARY KEY,
+                        data TEXT,
+                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    )
+                    """
+                )
                 self.sqlite_cache.execute(f"DELETE FROM {collection_name}")
                 for item in data:
                     self.sqlite_cache.execute(
-                        f"INSERT INTO {collection_name} (id, data) VALUES (?, ?)",
+                        # Dung INSERT OR REPLACE de de len thay vi loi UNIQUE constraint
+                        f"INSERT OR REPLACE INTO {collection_name} (id, data) VALUES (?, ?)",
                         (
                             str(item.get("_id", item.get("id", ""))),
                             json.dumps(item, ensure_ascii=False),
@@ -120,16 +129,23 @@ class ChimeraDB:
                     )
                 self.sqlite_cache.commit()
         except Exception as e:
-            logger.error(f"[DB] Loi cache SQLite: {e}")
+            logger.error(f"[DB] Loi cache SQLite ghi bang {collection_name}: {e}")
 
     def _read_from_sqlite(self, collection_name: str) -> list:
-        """Doc tu SQLite cache.
-        
-        WAL mode cho phep doc song song voi write ma khong can lock.
-        """
+        """Doc tu SQLite cache."""
         try:
+            # Dam bao bang ton tai truoc khi doc de tranh loi no such table
+            self.sqlite_cache.execute(
+                f"""
+                CREATE TABLE IF NOT EXISTS {collection_name} (
+                    id TEXT PRIMARY KEY,
+                    data TEXT,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+                """
+            )
             cursor = self.sqlite_cache.execute(f"SELECT data FROM {collection_name}")
             return [json.loads(row[0]) for row in cursor.fetchall()]
         except Exception as e:
-            logger.error(f"[DB] Loi doc SQLite: {e}")
+            logger.error(f"[DB] Loi doc SQLite tu bang {collection_name}: {e}")
             return []
