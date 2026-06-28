@@ -120,22 +120,48 @@ async def send_approval_request(text: str, document_path: str = None):
 
     if document_path and os.path.exists(document_path):
         # Gui file dinh kem
-        with open(document_path, "rb") as doc:
-            await bot.send_document(
-                chat_id=os.getenv("TELEGRAM_CHAT_ID"),
-                document=doc,
-                caption=text,
-                parse_mode="HTML",
-                reply_markup=keyboard,
-        )
+        try:
+            with open(document_path, "rb") as doc:
+                await bot.send_document(
+                    chat_id=os.getenv("TELEGRAM_CHAT_ID"),
+                    document=doc,
+                    caption=text,
+                    parse_mode="HTML",
+                    reply_markup=keyboard,
+                )
+        except telegram.error.BadRequest as e:
+            logger.warning(
+                f"[ShowrunnerBot] Telegram bị lỗi parse HTML trong caption ({e}). "
+                f"Gửi lại ở dạng plain text để không làm sập pipeline."
+            )
+            with open(document_path, "rb") as doc:
+                await bot.send_document(
+                    chat_id=os.getenv("TELEGRAM_CHAT_ID"),
+                    document=doc,
+                    caption=text,
+                    parse_mode=None,
+                    reply_markup=keyboard,
+                )
     else:
         # Gui tin nhan thong thuong neu khong co file
-        await bot.send_message(
-            chat_id=os.getenv("TELEGRAM_CHAT_ID"),
-            text=text,
-            parse_mode="HTML",
-            reply_markup=keyboard,
-        )
+        try:
+            await bot.send_message(
+                chat_id=os.getenv("TELEGRAM_CHAT_ID"),
+                text=text,
+                parse_mode="HTML",
+                reply_markup=keyboard,
+            )
+        except telegram.error.BadRequest as e:
+            logger.warning(
+                f"[ShowrunnerBot] Telegram bị lỗi parse HTML trong text ({e}). "
+                f"Gửi lại ở dạng plain text để không làm sập pipeline."
+            )
+            await bot.send_message(
+                chat_id=os.getenv("TELEGRAM_CHAT_ID"),
+                text=text,
+                parse_mode=None,
+                reply_markup=keyboard,
+            )
 
 
 async def wait_for_showrunner(timeout: float = None) -> str:
