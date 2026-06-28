@@ -1,0 +1,221 @@
+name: "🚀 [04] FULL PIPELINE — Chạy Toàn Bộ 3 Bản Tự Động"
+
+# ╔══════════════════════════════════════════════════════════════════╗
+# ║  CHIMERA V5.0.1 — WORKFLOW 04: FULL PIPELINE (BẢN 1+2+3)       ║
+# ║                                                                  ║
+# ║  Đây là workflow chạy hàng ngày (production).                   ║
+# ║  Tự động chạy Bản 1 → 2 → 3 trong cùng 1 job.                  ║
+# ║                                                                  ║
+# ║  TEST_MODE mặc định = true (tự duyệt Bản 1 của A1).             ║
+# ║  Để có Showrunner thật, trigger thủ công với test_mode=false.    ║
+# ║                                                                  ║
+# ║  Thời gian ước tính: 30–45 phút/tập                             ║
+# ║                                                                  ║
+# ║  SECRETS YÊU CẦU (đầy đủ):                                     ║
+# ║    MongoDB: MONGODB_URL_NO1 / NO2 / NO3                         ║
+# ║    Telegram: TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID              ║
+# ║    Gemini: GEMINI_API_KEY1..7                                   ║
+# ║    Groq:   GROQ_API_KEY1..6                                     ║
+# ║    ElevenLabs: ELEVENLABS_KEY1..6                               ║
+# ╚══════════════════════════════════════════════════════════════════╝
+
+on:
+  workflow_dispatch:
+    inputs:
+      test_mode:
+        description: "TEST_MODE — true: tự duyệt | false: chờ Showrunner Telegram"
+        required: true
+        default: "true"
+        type: choice
+        options:
+          - "true"
+          - "false"
+  schedule:
+    # Chạy hàng ngày lúc 01:00 UTC (08:00 ICT) — sau Stage 1 cron 00:00
+    - cron: "0 1 * * *"
+
+jobs:
+  full-pipeline:
+    name: "🎬 Full Pipeline — Bản 1 + 2 + 3"
+    runs-on: ubuntu-22.04
+    timeout-minutes: 55
+
+    env:
+      # ── MongoDB ────────────────────────────────────────────────────
+      MONGODB_URI_PERMANENT:    ${{ secrets.MONGODB_URL_NO1 }}
+      MONGODB_URI_PURGATORY:    ${{ secrets.MONGODB_URL_NO2 }}
+      MONGODB_URI_CANON:        ${{ secrets.MONGODB_URL_NO3 }}
+      # ── Telegram ───────────────────────────────────────────────────
+      TELEGRAM_BOT_TOKEN:       ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHAT_ID:         ${{ secrets.TELEGRAM_CHAT_ID }}
+      # ── Gemini Pool (7 keys) ───────────────────────────────────────
+      GEMINI_KEY_1:             ${{ secrets.GEMINI_API_KEY1 }}
+      GEMINI_KEY_2:             ${{ secrets.GEMINI_API_KEY2 }}
+      GEMINI_KEY_3:             ${{ secrets.GEMINI_API_KEY3 }}
+      GEMINI_KEY_4:             ${{ secrets.GEMINI_API_KEY4 }}
+      GEMINI_KEY_5:             ${{ secrets.GEMINI_API_KEY5 }}
+      GEMINI_KEY_6:             ${{ secrets.GEMINI_API_KEY6 }}
+      GEMINI_KEY_7:             ${{ secrets.GEMINI_API_KEY7 }}
+      # ── Groq Pool (6 keys) ─────────────────────────────────────────
+      GROQ_KEY_1:               ${{ secrets.GROQ_API_KEY1 }}
+      GROQ_KEY_2:               ${{ secrets.GROQ_API_KEY2 }}
+      GROQ_KEY_3:               ${{ secrets.GROQ_API_KEY3 }}
+      GROQ_KEY_4:               ${{ secrets.GROQ_API_KEY4 }}
+      GROQ_KEY_5:               ${{ secrets.GROQ_API_KEY5 }}
+      GROQ_KEY_6:               ${{ secrets.GROQ_API_KEY6 }}
+      # ── ElevenLabs Pool (6 keys) ───────────────────────────────────
+      ELEVENLABS_KEY_1:         ${{ secrets.ELEVENLABS_KEY1 }}
+      ELEVENLABS_KEY_2:         ${{ secrets.ELEVENLABS_KEY2 }}
+      ELEVENLABS_KEY_3:         ${{ secrets.ELEVENLABS_KEY3 }}
+      ELEVENLABS_KEY_4:         ${{ secrets.ELEVENLABS_KEY4 }}
+      ELEVENLABS_KEY_5:         ${{ secrets.ELEVENLABS_KEY5 }}
+      ELEVENLABS_KEY_6:         ${{ secrets.ELEVENLABS_KEY6 }}
+      # ── Local Config ───────────────────────────────────────────────
+      LOCAL_CACHE_PATH:         "./cache/local_cache.sqlite"
+      ARCHETYPES_CACHE_PATH:    "./cache/archetypes_cache.json"
+      SIMILARITY_THRESHOLD:     "0.70"
+      AUDITOR_MAX_RETRY:        "3"
+      SHOWRUNNER_TIMEOUT_HOURS: "24"
+      RESOURCE_LOCK_MAX_CONCURRENT: "2"
+      RESOURCE_LOCK_MAX_RAM_PERCENT: "75.0"
+      FFMPEG_THREADS:           "2"
+      FFMPEG_CRF:               "28"
+      FFMPEG_PRESET:            "veryfast"
+      LOG_LEVEL:                "INFO"
+      # TEST_MODE: dùng input nếu trigger thủ công, mặc định true khi cron
+      TEST_MODE: ${{ github.event.inputs.test_mode || 'true' }}
+
+    steps:
+      - name: "📥 Checkout source code"
+        uses: actions/checkout@v4
+
+      - name: "🐍 Setup Python 3.11"
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: "🎞️ Cài FFmpeg"
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y ffmpeg
+          ffmpeg -version | head -1
+
+      - name: "📦 Cài đặt toàn bộ thư viện (Bản 1 + 2 + 3)"
+        run: |
+          python -m pip install --upgrade pip
+          pip install \
+            pymongo>=4.6.0 \
+            pydantic>=2.5.0 \
+            pydantic-settings>=2.1.0 \
+            python-dotenv>=1.0.0 \
+            requests>=2.31.0 \
+            feedparser>=6.0.10 \
+            aiohttp>=3.9.0 \
+            python-telegram-bot>=20.7 \
+            google-generativeai>=0.4.0 \
+            groq>=0.4.0 \
+            elevenlabs>=0.2.27 \
+            edge-tts>=6.1.9 \
+            pydub>=0.25.1 \
+            psutil>=5.9.0 \
+            sentence-transformers>=2.3.0 \
+            numpy>=1.26.0 \
+            fastapi>=0.109.0 \
+            uvicorn>=0.27.0
+
+      - name: "🛠️ Auto-Fix DB (khẩn cấp trước khi chạy)"
+        run: |
+          python - <<'PYEOF'
+          import os
+          from pymongo import MongoClient
+
+          client = MongoClient(os.getenv("MONGODB_URI_PERMANENT"))
+          db = client["chimera_permanent"]
+
+          # Wildcards
+          if db.wildcards.count_documents({}) < 5:
+              wildcards = [
+                  {"wildcard_id": f"wc_0{i}", "name": n, "role": r, "used": False}
+                  for i, (n, r) in enumerate([
+                      ("Bà Hàng Xóm Ngồi Lê",       "informant"),
+                      ("Chủ Nợ Giang Hồ",             "antagonist_minor"),
+                      ("Thám Tử Tư Rởm",               "ally"),
+                      ("Kẻ Lừa Đảo Chuyên Nghiệp",     "trickster"),
+                      ("Cảnh Sát Nằm Vùng",            "law"),
+                      ("Người Đòi Nợ Thuê",            "antagonist_minor"),
+                      ("Cô Giáo Biến Chất",             "informant"),
+                      ("Nhà Báo Điều Tra",              "ally"),
+                  ], start=1)
+              ]
+              db.wildcards.delete_many({})
+              db.wildcards.insert_many(wildcards)
+              db.supporting_cast.delete_many({})
+              db.supporting_cast.insert_many(wildcards)
+
+          # Locations
+          if db.location_settings.count_documents({}) < 3:
+              db.location_settings.delete_many({})
+              db.location_settings.insert_many([
+                  {"location_id": "loc_01", "name": "Sàn Giao Dịch BĐS Xập Xệ",  "cooldown_remaining": 0, "last_used_episode": 0},
+                  {"location_id": "loc_02", "name": "Quán Trà Đá Vỉa Hè",          "cooldown_remaining": 0, "last_used_episode": 0},
+                  {"location_id": "loc_03", "name": "Phòng Trọ Sinh Viên",          "cooldown_remaining": 0, "last_used_episode": 0},
+                  {"location_id": "loc_04", "name": "Văn Phòng Công Ty Ma",         "cooldown_remaining": 0, "last_used_episode": 0},
+                  {"location_id": "loc_05", "name": "Chung Cư Cũ Xuống Cấp",        "cooldown_remaining": 0, "last_used_episode": 0},
+              ])
+
+          # Secret items
+          if db.secret_items.count_documents({}) < 2:
+              db.secret_items.delete_many({})
+              db.secret_items.insert_many([
+                  {"item_id": "item_01", "name": "Khế Ước Bán Mạng",  "rarity": "Legendary", "used": False},
+                  {"item_id": "item_02", "name": "Gương Chiếu Nghiệp", "rarity": "Epic",      "used": False},
+                  {"item_id": "item_03", "name": "Cuốn Sổ Tống Tiền",  "rarity": "Rare",      "used": False},
+              ])
+
+          print(f"[AutoFix] ✅ wildcards={db.wildcards.count_documents({})} | "
+                f"locations={db.location_settings.count_documents({})} | "
+                f"secret_items={db.secret_items.count_documents({})}")
+          PYEOF
+
+      # ═══════════════════════════════════════════════════════════════
+      # BẢN 1 — THU THẬP & MÔ PHỎNG
+      # ═══════════════════════════════════════════════════════════════
+      - name: "🔍 Bản 1 — Thu Thập & Mô Phỏng World State"
+        run: |
+          echo "▶ Bắt đầu Bản 1..."
+          python main_pipeline.py
+          echo "✅ Bản 1 hoàn tất."
+
+      # ═══════════════════════════════════════════════════════════════
+      # BẢN 2 — SÁNG TẠO & KIỂM DUYỆT
+      # ═══════════════════════════════════════════════════════════════
+      - name: "✍️ Bản 2 — Sáng Tạo Kịch Bản & Kiểm Duyệt"
+        run: |
+          echo "▶ Bắt đầu Bản 2 (TEST_MODE=$TEST_MODE)..."
+          python main_creative_pipeline.py
+          echo "✅ Bản 2 hoàn tất."
+
+      # ═══════════════════════════════════════════════════════════════
+      # BẢN 3 — RENDER & GIAO HÀNG
+      # ═══════════════════════════════════════════════════════════════
+      - name: "🎞️ Bản 3 — Render Media & Giao Hàng Telegram"
+        run: |
+          echo "▶ Bắt đầu Bản 3..."
+          python main_media_pipeline.py
+          echo "✅ Bản 3 hoàn tất."
+
+      # ═══════════════════════════════════════════════════════════════
+      # ARTIFACT — LƯU KẾT QUẢ
+      # ═══════════════════════════════════════════════════════════════
+      - name: "📦 Upload toàn bộ artifacts"
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: "FullPipeline-Episode-Output"
+          path: |
+            cache/master_payload_latest.json
+            cache/master_script_latest.json
+            cache/all_drafts.txt
+            temp/
+          retention-days: 7

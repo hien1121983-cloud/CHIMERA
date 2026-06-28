@@ -1,0 +1,127 @@
+name: "🧠 [00] Seed Database — Nạp Dữ Liệu Nền"
+
+# ╔══════════════════════════════════════════════════════════════════╗
+# ║  CHIMERA V5.0.1 — WORKFLOW 00: DATABASE SEEDER                  ║
+# ║  Chạy DUY NHẤT 1 LẦN trước khi khởi động hệ thống lần đầu.    ║
+# ║  Nạp toàn bộ dữ liệu nền (blueprints, archetypes, world data)  ║
+# ║  vào MongoDB Permanent (Cụm Não Số 1).                          ║
+# ║                                                                  ║
+# ║  SECRETS YÊU CẦU:                                               ║
+# ║    - MONGODB_URL_NO1  (chimera_permanent)                        ║
+# ╚══════════════════════════════════════════════════════════════════╝
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_reset:
+        description: "Xác nhận xóa và nạp lại toàn bộ dữ liệu nền? (gõ: YES)"
+        required: true
+        default: "NO"
+
+jobs:
+  seed-database:
+    name: "🌱 Nạp Dữ Liệu Nền vào MongoDB"
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+
+    steps:
+      - name: "📥 Checkout source code"
+        uses: actions/checkout@v4
+
+      - name: "🔒 Kiểm tra xác nhận"
+        run: |
+          if [ "${{ github.event.inputs.confirm_reset }}" != "YES" ]; then
+            echo "❌ Bạn chưa xác nhận. Gõ YES để tiếp tục."
+            exit 1
+          fi
+          echo "✅ Xác nhận hợp lệ. Bắt đầu seeding..."
+
+      - name: "🐍 Setup Python 3.11"
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: "📦 Cài đặt thư viện"
+        run: |
+          python -m pip install --upgrade pip
+          pip install pymongo python-dotenv
+
+      - name: "🚀 Chạy Database Seeder"
+        env:
+          MONGODB_URI_PERMANENT: ${{ secrets.MONGODB_URL_NO1 }}
+        run: |
+          echo "▶ Bắt đầu nạp dữ liệu nền..."
+          python database_seeder.py
+          echo "✅ Seeding hoàn tất."
+
+      - name: "🛠️ Nạp dữ liệu khẩn cấp bổ sung (Emergency Fix)"
+        env:
+          MONGODB_URI_PERMANENT: ${{ secrets.MONGODB_URL_NO1 }}
+        run: |
+          python - <<'PYEOF'
+          import os, json
+          from pymongo import MongoClient
+
+          client = MongoClient(os.getenv("MONGODB_URI_PERMANENT"))
+          db = client["chimera_permanent"]
+
+          # --- Wildcards / Supporting Cast (cần >= 6 để T0h random.sample) ---
+          wildcards = [
+              {"wildcard_id": "wc_01", "name": "Bà Hàng Xóm Ngồi Lê Đôi Mách",  "role": "informant",       "used": False},
+              {"wildcard_id": "wc_02", "name": "Chủ Nợ Giang Hồ",                "role": "antagonist_minor", "used": False},
+              {"wildcard_id": "wc_03", "name": "Thám Tử Tư Rởm",                 "role": "ally",            "used": False},
+              {"wildcard_id": "wc_04", "name": "Kẻ Lừa Đảo Chuyên Nghiệp",       "role": "trickster",       "used": False},
+              {"wildcard_id": "wc_05", "name": "Cảnh Sát Nằm Vùng",              "role": "law",             "used": False},
+              {"wildcard_id": "wc_06", "name": "Người Đòi Nợ Thuê",              "role": "antagonist_minor", "used": False},
+              {"wildcard_id": "wc_07", "name": "Cô Giáo Dạy Thêm Biến Chất",     "role": "informant",       "used": False},
+              {"wildcard_id": "wc_08", "name": "Nhà Báo Điều Tra Liều Lĩnh",     "role": "ally",            "used": False},
+          ]
+          db.wildcards.delete_many({})
+          db.wildcards.insert_many(wildcards)
+          db.supporting_cast.delete_many({})
+          db.supporting_cast.insert_many(wildcards)
+
+          # --- Locations (T0b cần >= 3) ---
+          if db.location_settings.count_documents({}) < 3:
+              db.location_settings.delete_many({})
+              db.location_settings.insert_many([
+                  {"location_id": "loc_01", "name": "Sàn Giao Dịch BĐS Xập Xệ",   "cooldown_remaining": 0, "last_used_episode": 0},
+                  {"location_id": "loc_02", "name": "Quán Trà Đá Vỉa Hè Quận 3",   "cooldown_remaining": 0, "last_used_episode": 0},
+                  {"location_id": "loc_03", "name": "Phòng Trọ Sinh Viên Năm 3",    "cooldown_remaining": 0, "last_used_episode": 0},
+                  {"location_id": "loc_04", "name": "Văn Phòng Công Ty Ma",         "cooldown_remaining": 0, "last_used_episode": 0},
+                  {"location_id": "loc_05", "name": "Chung Cư Cũ Xuống Cấp",        "cooldown_remaining": 0, "last_used_episode": 0},
+              ])
+
+          # --- Secret Items (T0g cần >= 2) ---
+          if db.secret_items.count_documents({}) < 2:
+              db.secret_items.delete_many({})
+              db.secret_items.insert_many([
+                  {"item_id": "item_01", "name": "Khế Ước Bán Mạng",  "rarity": "Legendary", "used": False},
+                  {"item_id": "item_02", "name": "Gương Chiếu Nghiệp", "rarity": "Epic",      "used": False},
+                  {"item_id": "item_03", "name": "Cuốn Sổ Tống Tiền",  "rarity": "Rare",      "used": False},
+              ])
+
+          # --- Platform Rules (T0c) ---
+          if db.platform_rules.count_documents({}) == 0:
+              db.platform_rules.insert_one({
+                  "platform_id": "tiktok_vn",
+                  "max_duration_seconds": 180,
+                  "preferred_ratio": "9:16",
+                  "forbidden_topics": ["politics", "religion", "explicit_violence"],
+                  "preferred_genres": ["drama", "thriller", "romance"],
+              })
+
+          print(f"[EmergencyFix] ✅ wildcards={db.wildcards.count_documents({})} | "
+                f"locations={db.location_settings.count_documents({})} | "
+                f"secret_items={db.secret_items.count_documents({})} | "
+                f"platform_rules={db.platform_rules.count_documents({})}")
+          PYEOF
+
+      - name: "📋 Upload báo cáo seeding"
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: "Bao-Cao-Seed-Database"
+          path: seeding_report.log
+          retention-days: 14

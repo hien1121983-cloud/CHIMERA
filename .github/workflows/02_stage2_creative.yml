@@ -1,0 +1,137 @@
+name: "🎬 [02] Stage 2 — Sáng Tạo Kịch Bản & Kiểm Duyệt"
+
+# ╔══════════════════════════════════════════════════════════════════╗
+# ║  CHIMERA V5.0.1 — WORKFLOW 02: STAGE 2 (BẢN 2)                 ║
+# ║                                                                  ║
+# ║  Luồng:                                                          ║
+# ║    CharacterFactory (đúc nhân vật) → A0 (visual lock)           ║
+# ║    → A1 Alchemist (3 bản nháp) → T3 Auditor (cosine sim)        ║
+# ║    → Showrunner duyệt qua Telegram                               ║
+# ║    → PostApproval (cập nhật World State)                         ║
+# ║    → cache/master_script_latest.json                             ║
+# ║                                                                  ║
+# ║  YÊU CẦU: Stage 1 phải đã chạy xong                             ║
+# ║    (có cache/master_payload_latest.json trong artifact)          ║
+# ║                                                                  ║
+# ║  TEST_MODE=true  → tự động duyệt Bản 1 (không cần Telegram)    ║
+# ║  TEST_MODE=false → chờ Showrunner bấm nút (production)          ║
+# ║                                                                  ║
+# ║  SECRETS YÊU CẦU:                                               ║
+# ║    MongoDB: MONGODB_URL_NO1 / NO2 / NO3                         ║
+# ║    Telegram: TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID              ║
+# ║    API Keys: GEMINI_API_KEY1..7 / GROQ_API_KEY1..6              ║
+# ║    ElevenLabs: ELEVENLABS_KEY1..6                               ║
+# ╚══════════════════════════════════════════════════════════════════╝
+
+on:
+  workflow_dispatch:
+    inputs:
+      test_mode:
+        description: "TEST_MODE: true = tự động duyệt Bản 1 | false = chờ Showrunner Telegram"
+        required: true
+        default: "true"
+        type: choice
+        options:
+          - "true"
+          - "false"
+
+jobs:
+  stage-2:
+    name: "✍️ Bản 2 — Sáng Tạo & Kiểm Duyệt"
+    runs-on: ubuntu-22.04
+    timeout-minutes: 25
+
+    steps:
+      - name: "📥 Checkout source code"
+        uses: actions/checkout@v4
+
+      - name: "🐍 Setup Python 3.11"
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: "📦 Cài đặt thư viện Bản 2"
+        run: |
+          python -m pip install --upgrade pip
+          pip install \
+            pymongo>=4.6.0 \
+            pydantic>=2.5.0 \
+            pydantic-settings>=2.1.0 \
+            python-dotenv>=1.0.0 \
+            requests>=2.31.0 \
+            feedparser>=6.0.10 \
+            aiohttp>=3.9.0 \
+            python-telegram-bot>=20.7 \
+            google-generativeai>=0.4.0 \
+            groq>=0.4.0 \
+            sentence-transformers>=2.3.0 \
+            numpy>=1.26.0 \
+            fastapi>=0.109.0 \
+            uvicorn>=0.27.0
+
+      - name: "📂 Download Master Payload từ Stage 1"
+        uses: actions/download-artifact@v4
+        with:
+          name: "Stage1-Master-Payload"
+          path: cache/
+        # Nếu không có artifact (chạy độc lập), dùng file cache có sẵn trong repo
+        continue-on-error: true
+
+      - name: "🔍 Kiểm tra Master Payload tồn tại"
+        run: |
+          if [ ! -f "cache/master_payload_latest.json" ]; then
+            echo "❌ Không tìm thấy cache/master_payload_latest.json"
+            echo "   → Hãy chạy Workflow 01 (Stage 1) trước."
+            exit 1
+          fi
+          EPISODE=$(python3 -c "import json; d=json.load(open('cache/master_payload_latest.json')); print(d['meta']['episode_number'])")
+          echo "✅ Master Payload tìm thấy — Episode: $EPISODE"
+
+      - name: "🎭 Chạy Bản 2 — Sáng Tạo & Kiểm Duyệt"
+        env:
+          MONGODB_URI_PERMANENT:    ${{ secrets.MONGODB_URL_NO1 }}
+          MONGODB_URI_PURGATORY:    ${{ secrets.MONGODB_URL_NO2 }}
+          MONGODB_URI_CANON:        ${{ secrets.MONGODB_URL_NO3 }}
+          TELEGRAM_BOT_TOKEN:       ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID:         ${{ secrets.TELEGRAM_CHAT_ID }}
+          GEMINI_KEY_1:             ${{ secrets.GEMINI_API_KEY1 }}
+          GEMINI_KEY_2:             ${{ secrets.GEMINI_API_KEY2 }}
+          GEMINI_KEY_3:             ${{ secrets.GEMINI_API_KEY3 }}
+          GEMINI_KEY_4:             ${{ secrets.GEMINI_API_KEY4 }}
+          GEMINI_KEY_5:             ${{ secrets.GEMINI_API_KEY5 }}
+          GEMINI_KEY_6:             ${{ secrets.GEMINI_API_KEY6 }}
+          GEMINI_KEY_7:             ${{ secrets.GEMINI_API_KEY7 }}
+          GROQ_KEY_1:               ${{ secrets.GROQ_API_KEY1 }}
+          GROQ_KEY_2:               ${{ secrets.GROQ_API_KEY2 }}
+          GROQ_KEY_3:               ${{ secrets.GROQ_API_KEY3 }}
+          GROQ_KEY_4:               ${{ secrets.GROQ_API_KEY4 }}
+          GROQ_KEY_5:               ${{ secrets.GROQ_API_KEY5 }}
+          GROQ_KEY_6:               ${{ secrets.GROQ_API_KEY6 }}
+          ELEVENLABS_KEY_1:         ${{ secrets.ELEVENLABS_KEY1 }}
+          ELEVENLABS_KEY_2:         ${{ secrets.ELEVENLABS_KEY2 }}
+          ELEVENLABS_KEY_3:         ${{ secrets.ELEVENLABS_KEY3 }}
+          ELEVENLABS_KEY_4:         ${{ secrets.ELEVENLABS_KEY4 }}
+          ELEVENLABS_KEY_5:         ${{ secrets.ELEVENLABS_KEY5 }}
+          ELEVENLABS_KEY_6:         ${{ secrets.ELEVENLABS_KEY6 }}
+          LOCAL_CACHE_PATH:         "./cache/local_cache.sqlite"
+          ARCHETYPES_CACHE_PATH:    "./cache/archetypes_cache.json"
+          SIMILARITY_THRESHOLD:     "0.70"
+          AUDITOR_MAX_RETRY:        "3"
+          SHOWRUNNER_TIMEOUT_HOURS: "24"
+          LOG_LEVEL:                "INFO"
+          # TEST_MODE được set từ input của người dùng khi trigger workflow
+          TEST_MODE: ${{ github.event.inputs.test_mode }}
+        run: |
+          echo "TEST_MODE = $TEST_MODE"
+          python main_creative_pipeline.py
+
+      - name: "📦 Upload Master Script"
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: "Stage2-Master-Script"
+          path: |
+            cache/master_script_latest.json
+            cache/all_drafts.txt
+          retention-days: 7

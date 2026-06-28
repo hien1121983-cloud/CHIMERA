@@ -1,0 +1,129 @@
+name: "💾 [05] GCS Backup — Sao Lưu MongoDB Định Kỳ"
+
+# ╔══════════════════════════════════════════════════════════════════╗
+# ║  CHIMERA V5.0.1 — WORKFLOW 05: GCS BACKUP                       ║
+# ║                                                                  ║
+# ║  Backup các collection quan trọng từ MongoDB ra Google Cloud     ║
+# ║  Storage (GCS) theo định kỳ mỗi 6 giờ.                          ║
+# ║                                                                  ║
+# ║  Collections được backup:                                        ║
+# ║    chimera_permanent:                                            ║
+# ║      - character_blueprints, world_rules, secret_items           ║
+# ║      - location_settings, archetypes, character_states           ║
+# ║    chimera_canon:                                                ║
+# ║      - episode_summaries, episode_embeddings                     ║
+# ║                                                                  ║
+# ║  SECRETS YÊU CẦU:                                               ║
+# ║    MongoDB: MONGODB_URL_NO1 / NO3                               ║
+# ║    GCS: GCS_BUCKET_NAME / GCP_SA_KEY (Service Account JSON)     ║
+# ╚══════════════════════════════════════════════════════════════════╝
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Chạy mỗi 6 tiếng: 02:00, 08:00, 14:00, 20:00 UTC
+    - cron: "0 2,8,14,20 * * *"
+
+jobs:
+  gcs-backup:
+    name: "💾 Backup MongoDB → GCS"
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+
+    steps:
+      - name: "📥 Checkout source code"
+        uses: actions/checkout@v4
+
+      - name: "🐍 Setup Python 3.11"
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: "📦 Cài đặt thư viện"
+        run: |
+          python -m pip install --upgrade pip
+          pip install pymongo google-cloud-storage python-dotenv
+
+      - name: "🔑 Xác thực Google Cloud (Service Account)"
+        run: |
+          echo '${{ secrets.GCP_SA_KEY }}' > /tmp/gcp_sa.json
+          echo "GOOGLE_APPLICATION_CREDENTIALS=/tmp/gcp_sa.json" >> $GITHUB_ENV
+
+      - name: "💾 Chạy Backup lên GCS"
+        env:
+          MONGODB_URI_PERMANENT: ${{ secrets.MONGODB_URL_NO1 }}
+          MONGODB_URI_CANON:     ${{ secrets.MONGODB_URL_NO3 }}
+          GCS_BUCKET_NAME:       ${{ secrets.GCS_BUCKET_NAME }}
+        run: |
+          python - <<'PYEOF'
+          import os, json, gzip, time, logging
+          from datetime import datetime, timezone
+          from pymongo import MongoClient
+          from google.cloud import storage
+
+          logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+          logger = logging.getLogger("GCSBackup")
+
+          BUCKET_NAME = os.getenv("GCS_BUCKET_NAME", "chimera-backup-prod")
+          TIMESTAMP   = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+
+          def export_collection(db, collection_name: str, prefix: str, max_retries=3) -> bool:
+              """Export 1 collection ra GCS với retry."""
+              gcs_client = storage.Client()
+              bucket     = gcs_client.bucket(BUCKET_NAME)
+
+              for attempt in range(max_retries):
+                  try:
+                      data = list(db[collection_name].find({}, {"_id": 0}))
+                      blob_path = f"backups/{prefix}/{collection_name}/{TIMESTAMP}.json.gz"
+                      compressed = gzip.compress(json.dumps(data, ensure_ascii=False, default=str).encode())
+                      blob = bucket.blob(blob_path)
+                      blob.upload_from_string(compressed, content_type="application/gzip")
+                      logger.info(f"✅ {prefix}/{collection_name}: {len(data)} docs → gs://{BUCKET_NAME}/{blob_path}")
+                      return True
+                  except Exception as e:
+                      wait = 2 ** (attempt + 1)
+                      logger.warning(f"⚠️  Attempt {attempt+1}/{max_retries} fail: {e}. Chờ {wait}s...")
+                      time.sleep(wait)
+              logger.error(f"❌ {collection_name} thất bại sau {max_retries} lần retry")
+              return False
+
+          results = []
+
+          # --- Cluster Permanent ---
+          perm_client = MongoClient(os.getenv("MONGODB_URI_PERMANENT"))
+          perm_db     = perm_client["chimera_permanent"]
+          for coll in ["character_blueprints", "world_rules", "secret_items",
+                        "location_settings", "archetypes", "character_states",
+                        "faction_states", "secret_pressures", "story_hooks"]:
+              results.append((coll, export_collection(perm_db, coll, "permanent")))
+
+          # --- Cluster Canon ---
+          canon_client = MongoClient(os.getenv("MONGODB_URI_CANON"))
+          canon_db     = canon_client["chimera_canon"]
+          for coll in ["episode_summaries", "episode_embeddings"]:
+              results.append((coll, export_collection(canon_db, coll, "canon")))
+
+          success = sum(1 for _, ok in results if ok)
+          total   = len(results)
+          logger.info(f"\n{'='*50}")
+          logger.info(f"BACKUP HOÀN TẤT: {success}/{total} collections thành công")
+          logger.info(f"Timestamp: {TIMESTAMP}")
+          if success < total:
+              failed = [n for n, ok in results if not ok]
+              logger.error(f"FAILED: {failed}")
+              exit(1)
+          PYEOF
+
+      - name: "🧹 Xóa file GCP credentials tạm"
+        if: always()
+        run: rm -f /tmp/gcp_sa.json
+
+      - name: "📋 Upload backup report"
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: "GCS-Backup-Report"
+          path: "*.log"
+          retention-days: 3
