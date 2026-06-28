@@ -1,6 +1,7 @@
 """T0i - World State Simulator (Va M-09: router cho deltas)."""
 import random
 import logging
+from datetime import datetime
 from typing import List, Dict
 
 from core.db_client import ChimeraDB
@@ -122,4 +123,57 @@ class WorldStateSimulator:
         return [h["hook_id"] for h in hooks if "hook_id" in h]
 
     def _persist_to_permanent(self, episode_number: int):
-        logger.info(f"[T0i] Persist state for episode {episode_number}")
+        """Lưu snapshot world state sau world_tick vào MongoDB permanent.
+
+        Snapshot bao gồm:
+        - Toàn bộ faction_states hiện tại (sau khi đã được tick)
+        - Danh sách áp lực đang hoạt động
+        - Danh sách hậu quả đang hoạt động
+        - Số nhân vật còn sống
+
+        Snapshot được upsert theo episode_number để có thể replay / audit.
+        """
+        logger.info(f"[T0i] Persist world snapshot cho episode {episode_number}...")
+        try:
+            # Lấy faction states đã được tick (đọc lại từ DB sau khi update)
+            faction_states = list(
+                self.db.permanent.faction_states.find({}, {"_id": 0})
+            )
+
+            # Đếm nhân vật còn sống (không tải hết data, chỉ count)
+            alive_count = self.db.permanent.character_states.count_documents(
+                {"status": "alive"}
+            )
+
+            # Lấy áp lực + hậu quả đang hoạt động
+            active_pressures = self.pressure_engine.get_active()
+            active_consequences = self.consequence_engine.get_active()
+
+            snapshot = {
+                "episode_number": episode_number,
+                "snapshot_at": datetime.utcnow().isoformat() + "Z",
+                "alive_character_count": alive_count,
+                "faction_states": faction_states,
+                "active_pressure_count": len(active_pressures),
+                "active_pressures": active_pressures,
+                "active_consequence_count": len(active_consequences),
+                "active_consequences": active_consequences,
+            }
+
+            self.db.permanent.world_snapshots.update_one(
+                {"episode_number": episode_number},
+                {"$set": snapshot},
+                upsert=True,
+            )
+
+            logger.info(
+                f"[T0i] ✅ World snapshot episode {episode_number} đã lưu — "
+                f"{alive_count} nhân vật sống, "
+                f"{len(faction_states)} faction, "
+                f"{len(active_pressures)} áp lực, "
+                f"{len(active_consequences)} hậu quả."
+            )
+        except Exception as e:
+            logger.error(
+                f"[T0i] ❌ Lỗi _persist_to_permanent episode {episode_number}: {e}"
+            )
