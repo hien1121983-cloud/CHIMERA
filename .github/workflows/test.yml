@@ -1,0 +1,137 @@
+name: "🧪 Test Pixazo AI Độc Lập"
+
+on:
+  workflow_dispatch: # Cho phép anh bấm chạy thủ công từ giao diện GitHub Actions
+
+jobs:
+  test-pixazo:
+    name: "Tạo ảnh với Pixazo & Gửi Telegram"
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: "🐍 Cài đặt Python & Thư viện"
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          
+      - name: "📦 Cài đặt thư viện requests"
+        run: pip install requests
+
+      - name: "🎨 Sinh mã Python, chạy Pixazo & Gửi Telegram"
+        env:
+          # Lấy API key và Telegram config từ kho Secrets của repo anh đang có sẵn
+          PIXAZO_API_KEY: ${{ secrets.PIXAZ_API_KEY1 }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          # 1. Bơm toàn bộ mã Python vào file tạm test_pixazo.py
+          cat << 'EOF' > test_pixazo.py
+          import os
+          import requests
+          import time
+
+          PIXAZO_API_KEY = os.environ.get("PIXAZO_API_KEY")
+          TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
+          TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
+
+          if not PIXAZO_API_KEY or not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
+              print("❌ Thiếu cấu hình API Key hoặc Telegram. Vui lòng kiểm tra Settings -> Secrets.")
+              exit(1)
+
+          MODEL_ENDPOINT = "https://gateway.pixazo.ai/flux-2-max/v1/generate"
+
+          # PROMPT siêu gắt dành riêng cho vũ trụ phim của anh
+          PROMPT = (
+              "A cinematic portrait of a Vietnamese young man, cynical eyes, messy dark hair, "
+              "worn street clothes, with a defiant sneer reflecting his nihilistic worldview, "
+              "standing in a dark alley illuminated by faint neon lights. "
+              "Cinematic lighting, highly detailed, vertical 9:16 aspect ratio, dramatic composition, film grain, 8k."
+          )
+
+          def send_to_telegram(image_url: str):
+              print("📤 Đang gửi ảnh về Telegram của anh...")
+              tg_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendPhoto"
+              payload = {
+                  "chat_id": TELEGRAM_CHAT_ID,
+                  "photo": image_url,
+                  "caption": f"🎬 **TEST PIXAZO AI THÀNH CÔNG!**\n\n📝 *Prompt:* {PROMPT[:100]}...",
+                  "parse_mode": "Markdown"
+              }
+              
+              resp = requests.post(tg_url, json=payload)
+              if resp.status_code == 200:
+                  print("✅ ĐÃ GỬI THÀNH CÔNG! Anh hãy check tin nhắn Telegram.")
+              else:
+                  print(f"❌ Lỗi gửi Telegram: {resp.text}")
+
+          def test_pixazo():
+              print("🚀 Bắt đầu gọi API Pixazo (Model: Flux 2 Max)...")
+              
+              headers = {
+                  "Content-Type": "application/json",
+                  "Cache-Control": "no-cache",
+                  "Ocp-Apim-Subscription-Key": PIXAZO_API_KEY
+              }
+              
+              payload = {
+                  "prompt": PROMPT,
+                  "aspect_ratio": "9:16",
+                  "sync_mode": False
+              }
+              
+              # Gửi lệnh vẽ
+              response = requests.post(MODEL_ENDPOINT, headers=headers, json=payload)
+              if response.status_code not in [200, 201, 202]:
+                  print(f"❌ Lỗi gọi API Pixazo: {response.status_code} - {response.text}")
+                  return
+
+              data = response.json()
+              request_id = data.get("request_id")
+              
+              if not request_id:
+                  print(f"❌ Không nhận được request_id. Phản hồi: {data}")
+                  return
+                  
+              print(f"✅ Đã lên đơn tạo ảnh thành công! Request ID: {request_id}")
+              print("⏳ Đang chờ máy chủ Pixazo vẽ ảnh (Khoảng 10-20 giây)...")
+              
+              # Quét liên tục (Polling) chờ kết quả
+              status_url = f"https://gateway.pixazo.ai/v2/requests/status/{request_id}"
+              image_url = None
+              
+              for attempt in range(15):
+                  time.sleep(5)
+                  status_resp = requests.get(status_url, headers=headers)
+                  
+                  if status_resp.status_code == 200:
+                      status_data = status_resp.json()
+                      status = status_data.get("status")
+                      print(f"   -> Giây thứ {attempt * 5 + 5}: Trạng thái '{status}'")
+                      
+                      if status == "COMPLETED":
+                          output = status_data.get("output", {})
+                          image_url = output.get("media_url") or output.get("image_url")
+                          if isinstance(image_url, list):
+                              image_url = image_url[0]
+                          break
+                      elif status == "FAILED":
+                          print("❌ Pixazo thông báo quá trình render thất bại.")
+                          return
+                  else:
+                      print(f"⚠️ Lỗi mạng khi check status: {status_resp.status_code}")
+                      
+              if not image_url:
+                  print("❌ Timeout! Không lấy được ảnh sau 75 giây chờ.")
+                  return
+                  
+              print(f"🎉 TẠO ẢNH HOÀN TẤT! Link gốc: {image_url}")
+              send_to_telegram(image_url)
+
+          if __name__ == "__main__":
+              test_pixazo()
+          EOF
+
+          # 2. Chạy file Python vừa được tạo ra
+          python test_pixazo.py
+
