@@ -218,26 +218,7 @@ class T0dRDE(BaseStation):
         return items
 
     def _fetch_gist_trends(self) -> List[Dict]:
-        """Fetch JSON từ Gist public (repo phụ cập nhật 4h/lần).
-
-        Schema Gist mong đợi (genz_hot_news.json):
-        {
-          "updated_at": "2026-06-28T10:00:00Z",
-          "source": "tiktok_vn",
-          "items": [
-            {
-              "title":    "Tiêu đề bài viral",
-              "hashtags": ["#bocphot", "#taichinhpersonal"],
-              "views":    5200000,
-              "category": "scandal",
-              "emotion":  "shock",
-              "raw_text": "Tóm tắt nội dung bài đăng..."
-            }
-          ]
-        }
-
-        Nếu Gist down hoặc schema sai → trả [] để caller dùng MongoDB cache.
-        """
+        """Fetch JSON từ Gist public (repo phụ cập nhật 4h/lần)."""
         try:
             resp = requests.get(
                 GIST_TREND_URL,
@@ -247,22 +228,34 @@ class T0dRDE(BaseStation):
             resp.raise_for_status()
             data = resp.json()
 
-            # ── Validate schema tối thiểu ─────────────────────────────────
-            if "items" not in data or not isinstance(data["items"], list):
-                logger.error(
-                    "[T0d] Gist JSON thiếu field 'items' hoặc không phải list. "
-                    "Kiểm tra lại schema genz_hot_news.json."
-                )
+            # ── Xử lý đọc JSON linh hoạt không chết lỗi ─────────────────────
+            raw_items = []
+            updated_at = ""
+
+            if isinstance(data, list):
+                # Trường hợp Gist trả về một Array list trực tiếp
+                raw_items = data
+            elif isinstance(data, dict):
+                updated_at = data.get("updated_at", "")
+                if "items" in data and isinstance(data["items"], list):
+                    # Trường hợp chuẩn (Dict có field items)
+                    raw_items = data["items"]
+                elif "title" in data or "category" in data or "raw_text" in data:
+                    # Trường hợp Gist trả về thẳng 1 Object bài viết duy nhất
+                    raw_items = [data]
+                else:
+                    logger.error("[T0d] Gist JSON trả về Dict rỗng hoặc không đúng chuẩn.")
+            else:
+                logger.error("[T0d] Gist JSON format không hợp lệ (không tìm thấy data).")
+
+            if not raw_items:
                 return []
 
             # ── Cảnh báo nếu data cũ hơn CACHE_MAX_AGE_HOURS ─────────────
-            updated_at = data.get("updated_at", "")
             if updated_at:
                 try:
                     dt = datetime.fromisoformat(updated_at.replace("Z", "+00:00"))
-                    age_hours = (
-                        datetime.now(timezone.utc) - dt
-                    ).total_seconds() / 3600
+                    age_hours = (datetime.now(timezone.utc) - dt).total_seconds() / 3600
                     if age_hours > CACHE_MAX_AGE_HOURS:
                         logger.warning(
                             f"[T0d] Gist TikTok cũ {age_hours:.1f}h "
@@ -272,10 +265,9 @@ class T0dRDE(BaseStation):
                 except ValueError:
                     pass
 
-            raw_items = data["items"]
             logger.info(
                 f"[T0d] Gist fetch OK: {len(raw_items)} items "
-                f"(updated_at={updated_at}, source={data.get('source','?')})"
+                f"(updated_at={updated_at})"
             )
 
             # ── Convert sang format chung ─────────────────────────────────
@@ -294,7 +286,7 @@ class T0dRDE(BaseStation):
                 })
 
             # ── Cache vào MongoDB PERMANENT ───────────────────────────────
-            self._save_trend_cache(raw_items, data.get("updated_at", ""))
+            self._save_trend_cache(raw_items, updated_at)
             return items
 
         except requests.exceptions.Timeout:
@@ -315,11 +307,7 @@ class T0dRDE(BaseStation):
     # ═══════════════════════════════════════════════════════════════════════════
 
     def _save_trend_cache(self, raw_items: List[Dict], updated_at: str):
-        """Lưu raw items vào MongoDB PERMANENT.trend_cache.
-
-        Collection: chimera_permanent.trend_cache
-        Document:   {"_id": "latest"}  — upsert, 1 document duy nhất.
-        """
+        """Lưu raw items vào MongoDB PERMANENT.trend_cache."""
         try:
             self.db.permanent.trend_cache.update_one(
                 {"_id": "latest"},
@@ -385,16 +373,11 @@ class T0dRDE(BaseStation):
             return []
 
     # ═══════════════════════════════════════════════════════════════════════════
-    # CLASSIFICATION (nâng cấp từ V1 — dùng category field khi có)
+    # CLASSIFICATION
     # ═══════════════════════════════════════════════════════════════════════════
 
     def _classify_to_pattern(self, item: Dict) -> BehaviorPattern:
-        """Phân loại item thành CHIMERA pattern.
-
-        Ưu tiên:
-        1. field 'category' từ Gist (chính xác nhất — do repo phụ gán)
-        2. Keyword scan title + summary (fallback cho RSS)
-        """
+        """Phân loại item thành CHIMERA pattern."""
         source_type = item.get("type", "unknown")
         text = f"{item.get('title', '')} {item.get('summary', '')}".lower()
         views = item.get("views", 0)
@@ -484,25 +467,24 @@ class T0dRDE(BaseStation):
         return 25
 
     # ═══════════════════════════════════════════════════════════════════════════
-    # TRANSLATION & GROUPING (giữ nguyên từ V1)
+    # TRANSLATION & GROUPING
     # ═══════════════════════════════════════════════════════════════════════════
 
     def _translate_to_pressures(
         self, patterns: List[BehaviorPattern]
     ) -> List[WorldPressure]:
-        """Map pattern → chimera_translation theo genre (Va M-10)."""
+        """Map pattern → chimera_translation theo genre."""
         pressures = []
         for i, p in enumerate(patterns):
             if p.pattern_id == "neutral":
                 continue
-            # Dùng genre của world_info, fallback về pattern_id thô
             translation = (
                 self.pattern_map
                 .get(p.pattern_id, {})
                 .get(self.genre)
                 or self.pattern_map
                 .get(p.pattern_id, {})
-                .get("sci_fi", p.pattern_id)  # secondary fallback
+                .get("sci_fi", p.pattern_id)
             )
             pressures.append(WorldPressure(
                 pressure_id=f"P_{i:03d}",
@@ -526,7 +508,6 @@ class T0dRDE(BaseStation):
             bucket = PATTERN_TO_BUCKET.get(p.type, "culture_pressure")
             result[bucket].append(p)
 
-        # Log summary
         non_empty = {k: len(v) for k, v in result.items() if v}
         logger.info(f"[T0d] RDE output: {non_empty}")
         return RDEOutput(**result)
