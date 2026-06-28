@@ -92,12 +92,12 @@ jobs:
           MONGODB_URI_CANON:         ${{ secrets.MONGODB_URL_NO3 }}
           TELEGRAM_BOT_TOKEN:        ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID:          ${{ secrets.TELEGRAM_CHAT_ID }}
-          GROQ_KEY_1:                ${{ secrets.GROQ_API_KEY1 }}
-          GROQ_KEY_2:                ${{ secrets.GROQ_API_KEY2 }}
-          GROQ_KEY_3:                ${{ secrets.GROQ_API_KEY3 }}
-          GROQ_KEY_4:                ${{ secrets.GROQ_API_KEY4 }}
-          GROQ_KEY_5:                ${{ secrets.GROQ_API_KEY5 }}
-          GROQ_KEY_6:                ${{ secrets.GROQ_API_KEY6 }}
+          CLAUDE_KEY_1:           ${{ secrets.CLAUDE_API_KEY1 }}
+          CLAUDE_KEY_2:           ${{ secrets.CLAUDE_API_KEY2 }}
+          CLAUDE_KEY_3:           ${{ secrets.CLAUDE_API_KEY3 }}
+          CLAUDE_KEY_4:           ${{ secrets.CLAUDE_API_KEY4 }}
+          CLAUDE_KEY_5:           ${{ secrets.CLAUDE_API_KEY5 }}
+          CLAUDE_KEY_6:           ${{ secrets.CLAUDE_API_KEY6 }}
           ELEVENLABS_KEY_1:          ${{ secrets.ELEVENLABS_KEY1 }}
           ELEVENLABS_KEY_2:          ${{ secrets.ELEVENLABS_KEY2 }}
           ELEVENLABS_KEY_3:          ${{ secrets.ELEVENLABS_KEY3 }}
