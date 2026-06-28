@@ -16,7 +16,7 @@ on:
       confirm_reset:
         description: "Xác nhận xóa và nạp lại toàn bộ dữ liệu nền? (gõ: YES)"
         required: true
-        default: "NO"
+        default: "YES"
 
 jobs:
   seed-database:
