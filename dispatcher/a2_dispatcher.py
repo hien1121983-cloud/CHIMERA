@@ -1,8 +1,8 @@
-"""Tram A2 (Groq): boc tach Master_Script -> Execution.json."""
+"""Tram A2 (Claude): boc tach Master_Script -> Execution.json."""
 import json
 import logging
 
-from core.credential_manager import GROQ_POOL
+from core.credential_manager import CLAUDE_POOL
 from dispatcher.visual_lock import VisualLockManager
 from dispatcher.prompt_translator import enrich_visual_prompt, build_scene_prompt
 
@@ -42,40 +42,44 @@ class A2Dispatcher:
     """Boc tach kich ban van hoc thanh lenh thuc thi ky thuat."""
 
     def __init__(self):
-        self.model = "llama-3.3-70b-versatile"
+        # Dùng phiên bản Haiku cực kỳ nhanh và chi phí thấp, siêu đỉnh trong việc bóc tách JSON
+        self.model = "claude-3-haiku-20240307" 
         self.visual_lock = VisualLockManager()
 
     def decompose_script(self, master_script: dict, _attempt: int = 0) -> dict:
         """Boc tach Master_Script thanh Execution JSON (retry huu han)."""
-        import groq
+        import anthropic
 
-        max_attempts = GROQ_POOL.active_count + 1
+        max_attempts = CLAUDE_POOL.active_count + 1
         if _attempt >= max_attempts:
             raise RuntimeError(
-                f"[A2] Tat ca {GROQ_POOL.active_count} Groq key da that bai "
+                f"[A2] Tat ca {CLAUDE_POOL.active_count} Claude key da that bai "
                 f"sau {_attempt} lan thu."
             )
 
-        key = GROQ_POOL.get_next()
+        key = CLAUDE_POOL.get_next()
         if not key:
-            raise RuntimeError("[A2] Khong co Groq key kha dung.")
+            raise RuntimeError("[A2] Khong co Claude key kha dung.")
 
         try:
-            client = groq.Groq(api_key=key)
+            client = anthropic.Anthropic(api_key=key)
             enriched_script = self._inject_visual_lock(master_script)
 
-            response = client.chat.completions.create(
+            response = client.messages.create(
                 model=self.model,
+                system=A2_SYSTEM_PROMPT,
                 messages=[
-                    {"role": "system", "content": A2_SYSTEM_PROMPT},
-                    {"role": "user",
-                     "content": json.dumps(enriched_script, ensure_ascii=False)},
+                    {"role": "user", "content": json.dumps(enriched_script, ensure_ascii=False)},
+                    # Ép Claude trả về JSON bằng cách mớm trước dấu ngoặc nhọn mở
+                    {"role": "assistant", "content": "{"}
                 ],
-                response_format={"type": "json_object"},
                 temperature=0.1,
                 max_tokens=8000,
             )
-            result = json.loads(response.choices[0].message.content)
+            
+            # Vì ta đã mớm dấu "{", Claude sẽ trả về phần CÒN LẠI của chuỗi JSON, nên ta phải ghép lại
+            result_text = "{" + response.content[0].text
+            result = json.loads(result_text)
 
             input_scenes = len(master_script.get("script", {}).get("scenes", []))
             output_scenes = len(result.get("scenes", []))
@@ -85,16 +89,20 @@ class A2Dispatcher:
                 )
                 raise ValueError("Scene count mismatch")
 
-            logger.info(f"[A2] Boc tach thanh cong {output_scenes} scenes")
+            logger.info(f"[A2] Boc tach thanh cong {output_scenes} scenes voi Claude")
             return result
+        except json.JSONDecodeError as e:
+            logger.error(f"[A2] Loi parse JSON tu Claude: {e}\nRaw output: {result_text[:200]}...")
+            CLAUDE_POOL.mark_failed(key)
+            return self.decompose_script(master_script, _attempt + 1)
         except Exception as e:
-            logger.error(f"[A2] Loi: {e}")
-            GROQ_POOL.mark_failed(key)
+            logger.error(f"[A2] Loi goi Claude: {e}")
+            CLAUDE_POOL.mark_failed(key)
             return self.decompose_script(master_script, _attempt + 1)
 
     def _inject_visual_lock(self, master_script: dict) -> dict:
         """Inject visual_lock_seed + ghep prompt nhan vat khoa vao moi scene
-        truoc khi gui Groq.
+        truoc khi gui Claude.
 
         Voi moi scene:
         1. Xac dinh characters_present tu danh sach dialogues.
@@ -104,11 +112,6 @@ class A2Dispatcher:
         4. Ghep tat ca thanh 1 prompt hoan chinh theo dinh dang:
            "Character A: <mo ta>; Character B: <mo ta>; Scene: <mo ta canh>"
            va GHI DE truc tiep vao scene["visual_prompt_en"].
-
-        Day la buoc bat buoc de dam bao nhan vat giu nguyen ngoai hinh da
-        khoa giua cac scene khi Pollinations ve anh - neu thieu, ImageGenerator
-        chi nhan duoc prompt canh chung do A1 tu bia, khong he biet nhan vat
-        trong canh do trong nhu the nao.
         """
         import copy
 
@@ -135,3 +138,4 @@ class A2Dispatcher:
                 character_prompts, scene_prompt_enriched
             )
         return enriched
+       
