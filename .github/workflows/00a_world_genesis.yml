@@ -7,7 +7,7 @@ name: "🌍 [00a] World Genesis — Sinh Nền Móng Thế Giới"
 # ║                                                                  ║
 # ║  SECRETS YÊU CẦU:                                               ║
 # ║    - MONGODB_URL_NO1  (chimera_permanent)                        ║
-# ║    - GEMINI_KEY_1 đến GEMINI_KEY_7                              ║
+# ║    - GEMINI_API_KEY1 đến GEMINI_API_KEY7                        ║
 # ╚══════════════════════════════════════════════════════════════════╝
 
 on:
@@ -47,15 +47,13 @@ jobs:
       - name: "🌍 Chạy WorldGenesis"
         env:
           MONGODB_URI_PERMANENT: ${{ secrets.MONGODB_URL_NO1 }}
-          MONGODB_URI_PURGATORY: ${{ secrets.MONGODB_URL_NO2 }} 
-          MONGODB_URI_CANON: ${{ secrets.MONGODB_URL_NO3 }}     # THÊM DÒNG NÀY
-          GEMINI_KEY_1: ${{ secrets.GEMINI_KEY_1 }}
-          GEMINI_KEY_2: ${{ secrets.GEMINI_KEY_2 }}
-          GEMINI_KEY_3: ${{ secrets.GEMINI_KEY_3 }}
-          GEMINI_KEY_4: ${{ secrets.GEMINI_KEY_4 }}
-          GEMINI_KEY_5: ${{ secrets.GEMINI_KEY_5 }}
-          GEMINI_KEY_6: ${{ secrets.GEMINI_KEY_6 }}
-          GEMINI_KEY_7: ${{ secrets.GEMINI_KEY_7 }}
+          GEMINI_KEY_1: ${{ secrets.GEMINI_API_KEY1 }}
+          GEMINI_KEY_2: ${{ secrets.GEMINI_API_KEY2 }}
+          GEMINI_KEY_3: ${{ secrets.GEMINI_API_KEY3 }}
+          GEMINI_KEY_4: ${{ secrets.GEMINI_API_KEY4 }}
+          GEMINI_KEY_5: ${{ secrets.GEMINI_API_KEY5 }}
+          GEMINI_KEY_6: ${{ secrets.GEMINI_API_KEY6 }}
+          GEMINI_KEY_7: ${{ secrets.GEMINI_API_KEY7 }}
           LOG_LEVEL: "INFO"
         run: |
           FORCE_FLAG=""
