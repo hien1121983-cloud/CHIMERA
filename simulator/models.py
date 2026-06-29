@@ -48,6 +48,7 @@ class Consequence(BaseModel):
 
 
 class ContextSliceV2(BaseModel):
+    # ── Layers từ V5 (giữ nguyên) ────────────────────────────────────────
     layer_1_lore: str = ""
     layer_2_character_states: Dict[str, Any] = Field(default_factory=dict)
     layer_3_relationships: Dict[str, Dict[str, Any]] = Field(default_factory=dict)
@@ -56,6 +57,20 @@ class ContextSliceV2(BaseModel):
     layer_6_mandatory_tasks: List[str] = Field(default_factory=list)
     layer_7_ticking_bombs: List[Any] = Field(default_factory=list)
     layer_8_overdue_hooks: List[str] = Field(default_factory=list)
+
+    # ── Layers mới — WorldGenesis foundation ─────────────────────────────
+    layer_9_world_map: Dict[str, Any] = Field(
+        default_factory=dict,
+        description="Tóm tắt lãnh thổ faction: zone count, contested hotspots",
+    )
+    layer_10_world_history: Dict[str, Any] = Field(
+        default_factory=dict,
+        description="Timeline lịch sử: era_name, recent events, landmark events",
+    )
+    layer_11_active_rules: List[Dict[str, Any]] = Field(
+        default_factory=list,
+        description="Danh sách WorldRules đang kích hoạt ảnh hưởng simulation",
+    )
 
 
 class PayloadMeta(BaseModel):
