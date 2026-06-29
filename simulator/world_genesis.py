@@ -1,11 +1,10 @@
 """WorldGenesis — 1 LLM call Gemini để sinh nền móng thế giới.
-
 Luồng:
-  1. Đọc world_genesis_seed.json + faction list từ MongoDB
-  2. Health-check Gemini pool (say hi với flash 2.5)
-  3. 1 LLM call → JSON 3 tầng (WorldMap + WorldHistory + WorldRules)
-  4. Parse Pydantic → validate → upsert MongoDB
-  5. Set flag genesis_completed = True
+1. Đọc world_genesis_seed.json + faction list từ MongoDB
+2. Health-check Gemini pool (say hi với flash 2.5)
+3. 1 LLM call → JSON 3 tầng (WorldMap + WorldHistory + WorldRules)
+4. Parse Pydantic → validate → upsert MongoDB
+5. Set flag genesis_completed = True
 """
 import json
 import logging
@@ -21,7 +20,6 @@ from simulator.models_genesis import GenesisOutput
 from simulator.engines.world_map_engine import WorldMapEngine
 from simulator.engines.world_history_engine import WorldHistoryEngine
 from simulator.engines.world_rules_engine import WorldRulesEngine
-from google.generativeai.types import HarmCategory, HarmBlockThreshold
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +29,6 @@ MODEL_NAME = "gemini-2.5-flash"
 
 GENESIS_SYSTEM_PROMPT = """Bạn là kiến trúc sư thế giới của CHIMERA — hệ thống kể chuyện tự động.
 Nhiệm vụ: Sinh ra nền móng của một thế giới drama tối tăm dựa trên seed đầu vào.
-
 Trả về JSON hợp lệ với cấu trúc CHÍNH XÁC:
 {
   "world_map": {
@@ -78,7 +75,7 @@ Trả về JSON hợp lệ với cấu trúc CHÍNH XÁC:
           {
             "effect_type": "template_weight|stat_modifier|pressure_multiplier",
             "target": "id hoặc tên stat",
-            "value": số_thực
+            "value": 0.0
           }
         ],
         "is_active": true,
@@ -99,12 +96,11 @@ QUAN TRỌNG:
 
 
 class WorldGenesis:
-
     def __init__(self, db: Optional[ChimeraDB] = None):
         self.db = db or ChimeraDB()
-        self.map_engine     = WorldMapEngine(self.db)
+        self.map_engine = WorldMapEngine(self.db)
         self.history_engine = WorldHistoryEngine(self.db)
-        self.rules_engine   = WorldRulesEngine(self.db)
+        self.rules_engine = WorldRulesEngine(self.db)
 
     # ── Public API ───────────────────────────────────────────────────────────
 
@@ -249,12 +245,6 @@ class WorldGenesis:
                 "temperature": 0.85,
                 "max_output_tokens": 8192,
             },
-          safety_settings={
-                HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
-                HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
-                HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
-                HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
-          }
         )
 
         raw = response.text
@@ -285,6 +275,7 @@ class WorldGenesis:
 
     def _set_completed_flag(self, world_name: str):
         from datetime import datetime, timezone
+
         self.db.permanent[GENESIS_FLAG_COLLECTION].update_one(
             {},
             {
