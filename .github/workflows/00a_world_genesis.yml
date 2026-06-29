@@ -42,20 +42,22 @@ jobs:
             python-dotenv \
             pydantic \
             pydantic-settings \
-            google-generativeai
+            cerebras_cloud_sdk  # <--- THAY VÀO ĐÂY
 
       - name: "🌍 Chạy WorldGenesis"
         env:
           MONGODB_URI_PERMANENT: ${{ secrets.MONGODB_URL_NO1 }}
-          MONGODB_URI_PURGATORY: ${{ secrets.MONGODB_URL_NO2 }} 
-          MONGODB_URI_CANON: ${{ secrets.MONGODB_URL_NO3 }}     # THÊM DÒNG NÀY
-          GEMINI_KEY_1: ${{ secrets.GEMINI_API_KEY1 }}
-          GEMINI_KEY_2: ${{ secrets.GEMINI_API_KEY2 }}
-          GEMINI_KEY_3: ${{ secrets.GEMINI_API_KEY3 }}
-          GEMINI_KEY_4: ${{ secrets.GEMINI_API_KEY4 }}
-          GEMINI_KEY_5: ${{ secrets.GEMINI_API_KEY5 }}
-          GEMINI_KEY_6: ${{ secrets.GEMINI_API_KEY6 }}
-          GEMINI_KEY_7: ${{ secrets.GEMINI_API_KEY7 }}
+          MONGODB_URI_PURGATORY: ${{ secrets.MONGODB_URL_NO1 }} 
+          MONGODB_URI_CANON: ${{ secrets.MONGODB_URL_NO1 }}
+          
+          # KHAI BÁO CEREBRAS KEY TẠI ĐÂY (Đảm bảo bạn đã thêm các Secret này trên GitHub):
+          CEREBRAS_API_KEY_1: ${{ secrets.CEREBRAS_API_KEY1 }}
+          CEREBRAS_API_KEY_2: ${{ secrets.CEREBRAS_API_KEY2 }}
+          CEREBRAS_API_KEY_3: ${{ secrets.CEREBRAS_API_KEY3 }}
+          CEREBRAS_API_KEY_4: ${{ secrets.CEREBRAS_API_KEY4 }}
+          CEREBRAS_API_KEY_5: ${{ secrets.CEREBRAS_API_KEY5 }}
+          CEREBRAS_API_KEY_6: ${{ secrets.CEREBRAS_API_KEY6 }}
+          
           LOG_LEVEL: "INFO"
         run: |
           FORCE_FLAG=""
