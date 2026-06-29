@@ -44,7 +44,7 @@ jobs:
             pydantic-settings \
             google-generativeai
 
-       - name: "🌍 Chạy WorldGenesis"
+      - name: "🌍 Chạy WorldGenesis"
         env:
           MONGODB_URI_PERMANENT: ${{ secrets.MONGODB_URL_NO1 }}
           MONGODB_URI_PURGATORY: ${{ secrets.MONGODB_URL_NO1 }} # THÊM DÒNG NÀY
