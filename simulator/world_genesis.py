@@ -2,7 +2,7 @@
 import json
 import logging
 from pathlib import Path
-from typing import Optional, Tuple
+from typing import Optional
 
 import google.generativeai as genai
 from google.generativeai.types import HarmCategory, HarmBlockThreshold
@@ -20,7 +20,7 @@ SEED_PATH = Path("database_seeds/world/world_genesis_seed.json")
 GENESIS_FLAG_COLLECTION = "world_info"
 MODEL_NAME = "gemini-2.5-flash"
 
-# ✅ TẮT TRIỆT ĐỂ SAFETY FILTER (áp dụng cho MỌI lời gọi LLM)
+# ✅ TẮT TRIỆT ĐỂ SAFETY FILTER
 SAFETY_SETTINGS = {
     HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
     HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
@@ -28,28 +28,95 @@ SAFETY_SETTINGS = {
     HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
 }
 
-# ── PROMPTS ĐÃ "LÀM MỀM" (giữ nguyên ý nghĩa, tránh từ nhạy cảm) ──────────
+# ── PROMPTS VỚI JSON SCHEMA CỤ THỂ CHO TỪNG BƯỚC ─────────────────────────
 
 PROMPT_MAP = """Bạn là kiến trúc sư bản đồ cho một thế giới giả tưởng phức tạp.
-Sinh ra JSON cho WorldMap với các khu vực có đặc điểm riêng biệt.
+Sinh ra JSON cho WorldMap.
 Yêu cầu:
-- Trả về ĐÚNG format schema. Không markdown, không giải thích.
-- Tông: thế giới nhiều tầng lớp, có sự phân hóa rõ rệt giữa các khu vực.
-- Mỗi zone phải có controlling_faction từ danh sách faction_seeds."""
+- Trả về ĐÚNG format schema bên dưới. Không markdown, không giải thích.
+- BẮT BUỘC phải có TẤT CẢ các field: zone_id, name, controlling_faction, contested_by, terrain_type, strategic_value, description, control_pct, total_zones, generated_at_tick.
+- terrain_type phải là một trong: tech_hub, underground, neutral_ground, residential, industrial.
+- Mỗi zone phải có controlling_faction từ danh sách faction_seeds.
+
+JSON SCHEMA BẮT BUỘC:
+{
+  "zones": [
+    {
+      "zone_id": "zone_001",
+      "name": "tên zone",
+      "controlling_faction": "faction_id",
+      "contested_by": [],
+      "terrain_type": "tech_hub",
+      "strategic_value": 50,
+      "description": "mô tả ngắn",
+      "control_pct": 100
+    }
+  ],
+  "total_zones": 1,
+  "generated_at_tick": 0
+}
+"""
 
 PROMPT_HISTORY = """Bạn là sử gia ghi chép lại lịch sử hình thành của một thế giới giả tưởng.
-Sinh ra JSON cho WorldHistory với các sự kiện quan trọng.
+Sinh ra JSON cho WorldHistory.
 Yêu cầu:
-- Trả về ĐÚNG format schema. Không markdown, không giải thích.
+- Trả về ĐÚNG format schema bên dưới. Không markdown, không giải thích.
+- BẮT BUỘC phải có TẤT CẢ các field: era_name, era_tagline, founding_events (với era, tick_range, event, impact, involved_factions, significance), generated_at_tick.
 - Các sự kiện phải logic với bản đồ (WorldMap) đã có.
-- Tông: thế giới có nhiều biến động, xung đột lợi ích giữa các thế lực."""
+
+JSON SCHEMA BẮT BUỘC:
+{
+  "era_name": "tên kỷ nguyên",
+  "era_tagline": "khẩu hiệu",
+  "founding_events": [
+    {
+      "era": "Before Tick 1",
+      "tick_range": "Before Tick 1",
+      "event": "mô tả sự kiện",
+      "impact": "tác động",
+      "involved_factions": ["faction_id"],
+      "significance": 80
+    }
+  ],
+  "generated_at_tick": 0
+}
+"""
 
 PROMPT_RULES = """Bạn là nhà thiết kế hệ thống luật lệ cho một thế giới giả tưởng.
-Sinh ra JSON cho WorldRules với các quy tắc vận hành.
+Sinh ra JSON cho WorldRules.
 Yêu cầu:
-- Trả về ĐÚNG format schema. Không markdown, không giải thích.
-- Các rule phải dựa trên bối cảnh của Map và History.
-- Tông: thế giới có cấu trúc phức tạp, đòi hỏi nhân vật phải thích nghi."""
+- Trả về ĐÚNG format schema bên dưới. Không markdown, không giải thích.
+- BẮT BUỘC phải có TẤT CẢ các field: rule_id, name, description, condition_type, condition_value, condition_op, effects (với effect_type, target, value), is_active, scope, generated_at_tick.
+- condition_type phải là một trong: faction_power_gap, world_pressure_category, tick_modulo, character_count.
+- condition_op phải là một trong: gte, lte, eq, gt, lt.
+- effect_type phải là một trong: template_weight, stat_modifier, pressure_multiplier.
+- scope phải là một trong: global, faction, character.
+
+JSON SCHEMA BẮT BUỘC:
+{
+  "rules": [
+    {
+      "rule_id": "wr_001",
+      "name": "tên rule",
+      "description": "mô tả rule",
+      "condition_type": "faction_power_gap",
+      "condition_value": "10",
+      "condition_op": "gte",
+      "effects": [
+        {
+          "effect_type": "stat_modifier",
+          "target": "morale",
+          "value": -0.5
+        }
+      ],
+      "is_active": true,
+      "scope": "global",
+      "generated_at_tick": 0
+    }
+  ],
+  "generated_at_tick": 0
+}
+"""
 
 
 class WorldGenesis:
@@ -93,8 +160,8 @@ class WorldGenesis:
             )
             world_map = WorldMap(**map_dict)
 
-            # BƯỚC 2: SINH HISTORY (truyền kèm Map để LLM viết sử logic)
-            logger.info("️  [Bước 2/3] Đang sinh WorldHistory...")
+            # BƯỚC 2: SINH HISTORY (Truyền kèm Map để LLM viết sử logic)
+            logger.info("➡️  [Bước 2/3] Đang sinh WorldHistory...")
             history_dict = self._execute_llm_call(
                 key, PROMPT_HISTORY,
                 f"Sinh WorldHistory ({seed.get('num_history_events', 20)} events).\nSeed: {json.dumps(seed)}\nContext Map: {json.dumps(map_dict, ensure_ascii=False)}"
@@ -140,11 +207,11 @@ class WorldGenesis:
             try:
                 genai.configure(api_key=key)
                 model = genai.GenerativeModel(MODEL_NAME)
-                # ✅ Test bằng số "1" - không thể bị Safety Filter chặn
+                # Test bằng số "1" - không thể bị Safety Filter chặn
                 resp = model.generate_content(
                     "Reply with the number 1",
                     generation_config={"max_output_tokens": 5, "temperature": 0.0},
-                    safety_settings=SAFETY_SETTINGS  # ✅ Thêm safety_settings vào đây
+                    safety_settings=SAFETY_SETTINGS
                 )
                 if resp.text and "1" in resp.text:
                     logger.info(f"✅ Chọn key {key[:12]}... để chạy genesis.")
@@ -172,7 +239,7 @@ class WorldGenesis:
                 "temperature": 0.8,
                 "max_output_tokens": 16384,  # 16k tokens cho mỗi component
             },
-            safety_settings=SAFETY_SETTINGS,  # ✅ Thêm safety_settings
+            safety_settings=SAFETY_SETTINGS,
         )
 
         # Xử lý lỗi block hoặc rỗng
