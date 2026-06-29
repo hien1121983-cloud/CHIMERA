@@ -35,7 +35,7 @@ def main():
     args = parser.parse_args()
 
     # Kiểm tra env vars tối thiểu
-    required_envs = ["MONGODB_URI_PERMANENT,CEREBRAS_API_KEY_1"]
+    required_envs = ["MONGODB_URI_PERMANENT","CEREBRAS_API_KEY_1"]
     missing = [e for e in required_envs if not os.getenv(e)]
     if missing:
         logger.critical(f"Thiếu biến môi trường: {missing}")
