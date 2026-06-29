@@ -1,8 +1,7 @@
 """CLI runner cho WorldGenesis.
-
 Usage:
-  python world_genesis_runner.py           # Chỉ chạy nếu chưa genesis
-  python world_genesis_runner.py --force   # Chạy lại bất kể đã genesis chưa
+python world_genesis_runner.py           # Chỉ chạy nếu chưa genesis
+python world_genesis_runner.py --force   # Chạy lại bất kể đã genesis chưa
 """
 import argparse
 import logging
@@ -55,8 +54,6 @@ def main():
     if genesis.is_completed() and not args.force:
         logger.info("✅ WorldGenesis đã hoàn tất trước đó. Không cần chạy lại.")
         logger.info("   Dùng --force để override.")
-
-        # In trạng thái hiện tại
         _print_current_status(db)
         sys.exit(0)
 
@@ -82,13 +79,13 @@ def _print_current_status(db):
         from simulator.engines.world_history_engine import WorldHistoryEngine
         from simulator.engines.world_rules_engine import WorldRulesEngine
 
-        map_eng     = WorldMapEngine(db)
+        map_eng = WorldMapEngine(db)
         history_eng = WorldHistoryEngine(db)
-        rules_eng   = WorldRulesEngine(db)
+        rules_eng = WorldRulesEngine(db)
 
-        zones   = map_eng.get_all_zones()
+        zones = map_eng.get_all_zones()
         history = history_eng.get_era_summary()
-        rules   = rules_eng.get_active_rules()
+        rules = rules_eng.get_active_rules()
 
         logger.info("-" * 40)
         logger.info(f"🗺️  WorldMap   : {len(zones)} zones")
