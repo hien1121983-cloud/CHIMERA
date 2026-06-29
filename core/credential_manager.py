@@ -64,7 +64,7 @@ class APIKeyPool:
 
 
 # Khoi tao pool toan cuc
-GEMINI_POOL = APIKeyPool("GEMINI_KEY", total=0)
+GEMINI_POOL = APIKeyPool("GEMINI_KEY", total=7)
 CLAUDE_POOL = APIKeyPool("CLAUDE_KEY", total=0)
 ELEVENLABS_POOL = APIKeyPool("ELEVENLABS_KEY", total=0)
-CEREBRAS_POOL = APIKeyPool("CEREBRAS_API_KEY", total=6)
+CEREBRAS_POOL = APIKeyPool("CEREBRAS_API_KEY", total=0)
