@@ -21,6 +21,7 @@ from simulator.models_genesis import GenesisOutput
 from simulator.engines.world_map_engine import WorldMapEngine
 from simulator.engines.world_history_engine import WorldHistoryEngine
 from simulator.engines.world_rules_engine import WorldRulesEngine
+from google.generativeai.types import HarmCategory, HarmBlockThreshold
 
 logger = logging.getLogger(__name__)
 
@@ -248,6 +249,12 @@ class WorldGenesis:
                 "temperature": 0.85,
                 "max_output_tokens": 8192,
             },
+          safety_settings={
+                HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
+                HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
+                HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
+                HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
+          }
         )
 
         raw = response.text
