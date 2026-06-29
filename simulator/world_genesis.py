@@ -13,14 +13,18 @@ import os
 from pathlib import Path
 from typing import Optional, Tuple
 
-import google.generativeai as genai
+# THÊM DÒNG NÀY (Nếu chưa có):
+from cerebras.cloud.sdk import Cerebras
 
 from core.db_client import ChimeraDB
-from core.credential_manager import GEMINI_POOL
+# ĐẢM BẢO DÙNG CEREBRAS_POOL THAY VÌ GEMINI_POOL:
+from core.credential_manager import CEREBRAS_POOL
 from simulator.models_genesis import GenesisOutput
 from simulator.engines.world_map_engine import WorldMapEngine
 from simulator.engines.world_history_engine import WorldHistoryEngine
 from simulator.engines.world_rules_engine import WorldRulesEngine
+
+# ... (Tiếp tục code ở dưới)
 
 logger = logging.getLogger(__name__)
 
