@@ -47,7 +47,8 @@ jobs:
       - name: "🌍 Chạy WorldGenesis"
         env:
           MONGODB_URI_PERMANENT: ${{ secrets.MONGODB_URL_NO1 }}
-          MONGODB_URI_PURGATORY: ${{ secrets.MONGODB_URL_NO1 }} # THÊM DÒNG NÀY
+          MONGODB_URI_PURGATORY: ${{ secrets.MONGODB_URL_NO2 }} 
+          MONGODB_URI_CANON: ${{ secrets.MONGODB_URL_NO3 }}     # THÊM DÒNG NÀY
           GEMINI_KEY_1: ${{ secrets.GEMINI_API_KEY1 }}
           GEMINI_KEY_2: ${{ secrets.GEMINI_API_KEY2 }}
           GEMINI_KEY_3: ${{ secrets.GEMINI_API_KEY3 }}
