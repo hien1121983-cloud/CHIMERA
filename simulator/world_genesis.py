@@ -13,18 +13,14 @@ import os
 from pathlib import Path
 from typing import Optional, Tuple
 
-# THÊM DÒNG NÀY (Nếu chưa có):
-from cerebras.cloud.sdk import Cerebras
+import google.generativeai as genai
 
 from core.db_client import ChimeraDB
-# ĐẢM BẢO DÙNG CEREBRAS_POOL THAY VÌ GEMINI_POOL:
-from core.credential_manager import CEREBRAS_POOL
+from core.credential_manager import GEMINI_POOL
 from simulator.models_genesis import GenesisOutput
 from simulator.engines.world_map_engine import WorldMapEngine
 from simulator.engines.world_history_engine import WorldHistoryEngine
 from simulator.engines.world_rules_engine import WorldRulesEngine
-
-# ... (Tiếp tục code ở dưới)
 
 logger = logging.getLogger(__name__)
 
@@ -130,49 +126,58 @@ class WorldGenesis:
         if not seed:
             logger.error("[WorldGenesis] Không đọc được seed file.")
             return False
-import json
-import logging
-import os
-from pathlib import Path
-from typing import Optional, Tuple
 
-# BỎ DÒNG NÀY: import google.generativeai as genai
-# THÊM DÒNG NÀY:
-from cerebras.cloud.sdk import Cerebras
+        # Bước 2: Bổ sung faction list từ DB
+        seed = self._enrich_seed_with_db_factions(seed)
 
-from core.db_client import ChimeraDB
-# ĐỔI GEMINI_POOL THÀNH CEREBRAS_POOL:
-from core.credential_manager import CEREBRAS_POOL
-from simulator.models_genesis import GenesisOutput
-from simulator.engines.world_map_engine import WorldMapEngine
-from simulator.engines.world_history_engine import WorldHistoryEngine
-from simulator.engines.world_rules_engine import WorldRulesEngine
+        # Bước 3: Health-check + LLM call
+        key, genesis_output = self._call_llm_with_healthcheck(seed)
+        if not genesis_output:
+            logger.error("[WorldGenesis] Không nhận được output từ LLM.")
+            return False
 
-logger = logging.getLogger(__name__)
+        # Bước 4: Seed 3 engines
+        self._persist(genesis_output)
 
-SEED_PATH = Path("database_seeds/world/world_genesis_seed.json")
-GENESIS_FLAG_COLLECTION = "world_info"
-# SỬ DỤNG MODEL LLAMA CỦA CEREBRAS:
-MODEL_NAME = "llama3.3-70b" 
+        # Bước 5: Set flag
+        self._set_completed_flag(seed.get("world_name", "Chimerean Nexus"))
+        logger.info("[WorldGenesis] === WORLD GENESIS HOÀN TẤT ===")
+        return True
 
-GENESIS_SYSTEM_PROMPT = """Bạn là kiến trúc sư thế giới của CHIMERA... 
-(GIỮ NGUYÊN TOÀN BỘ NỘI DUNG PROMPT NÀY CỦA BẠN)
-"""
+    # ── Internal ─────────────────────────────────────────────────────────────
 
-class WorldGenesis:
-    # ... (Giữ nguyên hàm __init__, run, _load_seed, _enrich_seed_with_db_factions)
+    def _load_seed(self) -> Optional[dict]:
+        try:
+            with open(SEED_PATH, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception as e:
+            logger.error(f"[WorldGenesis] Lỗi đọc seed: {e}")
+            return None
+
+    def _enrich_seed_with_db_factions(self, seed: dict) -> dict:
+        """Thêm blueprint names từ DB vào seed (nếu có)."""
+        try:
+            blueprints = list(
+                self.db.permanent.character_blueprints.find(
+                    {}, {"_id": 0, "blueprint_id": 1, "archetype_name": 1}
+                )
+            )
+            if blueprints:
+                seed["db_blueprints"] = blueprints
+        except Exception as e:
+            logger.warning(f"[WorldGenesis] Không lấy được blueprints từ DB: {e}")
+        return seed
 
     def _health_check_key(self, key: str) -> bool:
-        """Say hi với Cerebras để xác nhận key còn sống."""
+        """Say hi với gemini-2.5-flash để xác nhận key còn sống."""
         try:
-            client = Cerebras(api_key=key)
-            resp = client.chat.completions.create(
-                model=MODEL_NAME,
-                messages=[{"role": "user", "content": "Say hi"}],
-                max_completion_tokens=10,
-                temperature=0.0
+            genai.configure(api_key=key)
+            model = genai.GenerativeModel(MODEL_NAME)
+            resp = model.generate_content(
+                "Say hi",
+                generation_config={"max_output_tokens": 10, "temperature": 0.0},
             )
-            is_live = bool(resp.choices and resp.choices[0].message.content)
+            is_live = bool(resp.text and len(resp.text.strip()) > 0)
             if is_live:
                 logger.info(f"[WorldGenesis] Key {key[:12]}... ✅ live")
             else:
@@ -182,38 +187,49 @@ class WorldGenesis:
             logger.warning(f"[WorldGenesis] Key {key[:12]}... ❌ failed: {e}")
             return False
 
-    def _call_llm_with_healthcheck(self, seed: dict) -> Tuple[Optional[str], Optional[GenesisOutput]]:
-        """Xoay vòng key Cerebras: health-check trước, LLM call sau."""
-        max_attempts = CEREBRAS_POOL.active_count + 1
+    def _call_llm_with_healthcheck(
+        self, seed: dict
+    ) -> Tuple[Optional[str], Optional[GenesisOutput]]:
+        """Xoay vòng key: health-check trước, LLM call sau."""
+        max_attempts = GEMINI_POOL.active_count + 1
 
         for attempt in range(max_attempts):
-            key = CEREBRAS_POOL.get_next()
+            key = GEMINI_POOL.get_next()
             if not key:
                 logger.error("[WorldGenesis] Pool hết key.")
                 break
 
+            # Health check
             if not self._health_check_key(key):
-                CEREBRAS_POOL.mark_failed(key)
+                GEMINI_POOL.mark_failed(key)
                 continue
 
+            # LLM call thật
             try:
                 output = self._call_genesis_llm(key, seed)
                 if output:
                     return key, output
             except Exception as e:
                 logger.error(f"[WorldGenesis] LLM call thất bại (attempt {attempt+1}): {e}")
-                CEREBRAS_POOL.mark_failed(key)
+                GEMINI_POOL.mark_failed(key)
 
         return None, None
 
     def _call_genesis_llm(self, key: str, seed: dict) -> Optional[GenesisOutput]:
-        """Gọi Cerebras API để sinh thế giới (Bắt buộc trả JSON)."""
-        client = Cerebras(api_key=key)
+        """Gọi Gemini 1 lần với full seed prompt."""
+        genai.configure(api_key=key)
 
-        schema_str = json.dumps(GenesisOutput.model_json_schema(), ensure_ascii=False, indent=2)
+        schema_str = json.dumps(
+            GenesisOutput.model_json_schema(), ensure_ascii=False, indent=2
+        )
         system_prompt = (
             GENESIS_SYSTEM_PROMPT
             + f"\n\nJSON SCHEMA BẮT BUỘC:\n{schema_str}"
+        )
+
+        model = genai.GenerativeModel(
+            MODEL_NAME,
+            system_instruction=system_prompt,
         )
 
         user_content = (
@@ -223,24 +239,21 @@ class WorldGenesis:
             f"cho thế giới:\n{json.dumps(seed, ensure_ascii=False, indent=2)}"
         )
 
-        logger.info(f"[WorldGenesis] Gọi Cerebras ({MODEL_NAME}) — seed: {seed.get('world_name')}")
+        logger.info(f"[WorldGenesis] Gọi LLM — seed: {seed.get('world_name')}")
 
-        # GỌI CHUẨN OPENAI FORMAT TRÊN CEREBRAS:
-        response = client.chat.completions.create(
-            model=MODEL_NAME,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_content}
-            ],
-            response_format={"type": "json_object"},
-            temperature=0.85,
-            max_completion_tokens=8192
+        response = model.generate_content(
+            user_content,
+            generation_config={
+                "response_mime_type": "application/json",
+                "temperature": 0.85,
+                "max_output_tokens": 8192,
+            },
         )
 
-        raw = response.choices[0].message.content
+        raw = response.text
         logger.debug(f"[WorldGenesis] Raw response length: {len(raw)} chars")
 
-        # Fallback strip markdown nếu cần
+        # Strip markdown nếu model quên
         if raw.strip().startswith("```"):
             raw = raw.strip().lstrip("`").lstrip("json").strip()
             if raw.endswith("```"):
@@ -255,9 +268,6 @@ class WorldGenesis:
             f"{len(validated.world_rules.rules)} rules."
         )
         return validated
-
-    # ... (Giữ nguyên _persist và _set_completed_flag)
-
 
     def _persist(self, output: GenesisOutput):
         """Ghi 3 tầng vào MongoDB qua từng engine."""
