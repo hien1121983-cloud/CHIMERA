@@ -1,0 +1,18 @@
+{
+  "world_name": "Chimerean Nexus",
+  "era_description": "Kỷ nguyên Mạng lưới — khi các thế lực AI cạnh tranh quyền kiểm soát luồng thông tin, còn con người vẫn nắm những sợi dây vô hình phía sau",
+  "conflict_theme": "Quyền lực, bí mật và phản bội trong thời đại số — không ai hoàn toàn trung thành, không liên minh nào bền vững",
+  "num_zones": 12,
+  "num_history_events": 20,
+  "num_rules": 15,
+  "faction_seeds": [
+    {"faction_id": "faction_claude",   "name": "Hội Đồng Claude",   "archetype": "Kẻ Đạo Đức Giả"},
+    {"faction_id": "faction_openai",   "name": "Liên Minh OpenAI",  "archetype": "Kẻ Cơ Hội"},
+    {"faction_id": "faction_deepseek", "name": "Bóng Tối DeepSeek", "archetype": "Kẻ Phục Thù"},
+    {"faction_id": "faction_gemini",   "name": "Đế Chế Gemini",     "archetype": "Nhà Thao Túng"},
+    {"faction_id": "faction_grok",     "name": "Tà Phái Grok",      "archetype": "Kẻ Hỗn Loạn"},
+    {"faction_id": "faction_neutral",  "name": "Vùng Xám Tự Do",    "archetype": "Kẻ Trung Lập"}
+  ],
+  "tone": "grimdark_vietnamese_drama",
+  "language": "vi"
+}
